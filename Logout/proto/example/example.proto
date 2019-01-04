@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package go.micro.srv.Logout;
+
+service Example {
+	rpc Logout(Request) returns (Response) {}
+}
+
+message Message {
+	string say = 1;
+}
+
+message Request {
+	string SessionId = 1;
+}
+
+message Response {
+	string ErrCode = 1;
+	string ErrMsg = 2;
+}
