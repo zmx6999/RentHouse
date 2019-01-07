@@ -1,0 +1,122 @@
+syntax = "proto3";
+
+package go.micro.srv.User;
+
+service Example {
+	rpc GetImageCpt(GetImageCptRequest) returns (GetImageCptResponse) {}
+	rpc GetSmsCpt(GetSmsCptRequest) returns (GetSmsCptResponse) {}
+	rpc Register(RegisterRequest) returns (RegisterResponse) {}
+	rpc Login(LoginRequest) returns (LoginResponse) {}
+	rpc Logout(LogoutRequest) returns (LogoutResponse) {}
+	rpc GetUserInfo(GetUserInfoRequest) returns (GetUserInfoResponse) {}
+	rpc Rename(RenameRequest) returns (RenameResponse) {}
+	rpc Auth(AuthRequest) returns (AuthResponse) {}
+	rpc UploadAvatar(UploadAvatarRequest) returns (UploadAvatarResponse) {}
+}
+
+message Message {
+	string say = 1;
+}
+
+message GetImageCptRequest {
+	string Uuid = 1;
+}
+
+message GetImageCptResponse {
+	string ErrCode = 1;
+	string Msg = 2;
+	bytes Pix = 3;
+	int64 Stride = 4;
+	message Point {
+		int64 X = 1;
+		int64 Y = 2;
+	}
+	Point Max = 5;
+	Point Min = 6;
+}
+
+message GetSmsCptRequest {
+	string Uuid = 1;
+	string Mobile = 2;
+	string Text = 3;
+}
+
+message GetSmsCptResponse {
+	string ErrCode = 1;
+	string Msg = 2;
+}
+
+message RegisterRequest {
+	string Mobile = 1;
+	string Password = 2;
+	string Text = 3;
+}
+
+message RegisterResponse {
+	string ErrCode = 1;
+	string Msg = 2;
+	string SessionId = 3;
+}
+
+message LoginRequest {
+	string Mobile = 1;
+	string Password = 2;
+}
+
+message LoginResponse {
+	string ErrCode = 1;
+	string Msg = 2;
+	string SessionId = 3;
+}
+
+message LogoutRequest {
+	string SessionId = 1;
+}
+
+message LogoutResponse {
+	string ErrCode = 1;
+	string Msg = 2;
+}
+
+message GetUserInfoRequest {
+	string SessionId = 1;
+}
+
+message GetUserInfoResponse {
+	string ErrCode = 1;
+	string Msg = 2;
+	bytes Data = 3;
+}
+
+message RenameRequest {
+	string SessionId = 1;
+	string NewName = 2;
+}
+
+message RenameResponse {
+	string ErrCode = 1;
+	string Msg = 2;
+}
+
+message AuthRequest {
+	string SessionId = 1;
+	string RealName = 2;
+	string IdCard = 3;
+}
+
+message AuthResponse {
+	string ErrCode = 1;
+	string Msg = 2;
+}
+
+message UploadAvatarRequest {
+	string SessionId = 1;
+	bytes Data = 2;
+	string FileName = 3;
+	int64 FileSize = 4;
+}
+
+message UploadAvatarResponse {
+	string ErrCode = 1;
+	string Msg = 2;
+}

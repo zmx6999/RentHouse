@@ -1,0 +1,85 @@
+syntax = "proto3";
+
+package go.micro.srv.House;
+
+service Example {
+	rpc AddHouse(AddHouseRequest) returns (AddHouseResponse) {}
+	rpc GetUserHouses(GetUserHousesRequest) returns (GetUserHousesResponse) {}
+	rpc UploadHouseImage(UploadHouseImageRequest) returns (UploadHouseImageResponse) {}
+	rpc GetHouseDetail(GetHouseDetailRequest) returns (GetHouseDetailResponse) {}
+	rpc GetIndexBanner(GetIndexBannerRequest) returns (GetIndexBannerResponse) {}
+	rpc SearchHouse(SearchHouseRequest) returns (SearchHouseResponse) {}
+}
+
+message Message {
+	string say = 1;
+}
+
+message AddHouseRequest {
+	string SessionId = 1;
+	bytes Data = 2;
+}
+
+message AddHouseResponse {
+	string ErrCode = 1;
+	string Msg = 2;
+	int64 HouseId = 3;
+}
+
+message GetUserHousesRequest {
+	string SessionId = 1;
+}
+
+message GetUserHousesResponse {
+	string ErrCode = 1;
+	string Msg = 2;
+	bytes Data = 3;
+}
+
+message UploadHouseImageRequest {
+	string SessionId = 1;
+	int64 HouseId = 2;
+	bytes Data = 3;
+	int64 FileSize = 4;
+	string FileName = 5;
+}
+
+message UploadHouseImageResponse {
+	string ErrCode = 1;
+	string Msg = 2;
+}
+
+message GetHouseDetailRequest {
+	int64 HouseId = 1;
+}
+
+message GetHouseDetailResponse {
+	string ErrCode = 1;
+	string Msg = 2;
+	bytes Data = 3;
+}
+
+message GetIndexBannerRequest {
+
+}
+
+message GetIndexBannerResponse {
+	string ErrCode = 1;
+	string Msg = 2;
+	bytes Data = 3;
+}
+
+message SearchHouseRequest {
+	string AreaId = 1;
+	string Page = 2;
+	string StartDate = 3;
+	string EndDate = 4;
+}
+
+message SearchHouseResponse {
+	string ErrCode = 1;
+	string Msg = 2;
+	bytes Data = 3;
+	int64 totalPages = 4;
+	int64 currentPage = 5;
+}

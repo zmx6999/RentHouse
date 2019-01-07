@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+package go.micro.srv.Order;
+
+service Example {
+	rpc AddOrder(AddOrderRequest) returns (AddOrderResponse) {}
+	rpc GetOrders(GetOrdersRequest) returns (GetOrdersResponse) {}
+	rpc HandleOrder(HandleOrderRequest) returns (HandleOrderResponse) {}
+	rpc CommentOrder(CommentOrderRequest) returns (CommentOrderResponse) {}
+}
+
+message Message {
+	string say = 1;
+}
+
+message AddOrderRequest {
+	string SessionId = 1;
+	bytes Data = 2;
+}
+
+message AddOrderResponse {
+	string ErrCode = 1;
+	string Msg = 2;
+	int64 OrderId = 3;
+}
+
+message GetOrdersRequest {
+	string SessionId = 1;
+	string Role = 2;
+}
+
+message GetOrdersResponse {
+	string ErrCode = 1;
+	string Msg = 2;
+	bytes Data = 3;
+}
+
+message HandleOrderRequest {
+	string SessionId = 1;
+	int64 OrderId = 2;
+	string Action = 3;
+}
+
+message HandleOrderResponse {
+	string ErrCode = 1;
+	string Msg = 2;
+}
+
+message CommentOrderRequest {
+	string SessionId = 1;
+	int64 OrderId = 2;
+	string Comment = 3;
+}
+
+message CommentOrderResponse {
+	string ErrCode = 1;
+	string Msg = 2;
+}
