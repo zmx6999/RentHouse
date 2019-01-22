@@ -6,48 +6,43 @@ import (
 )
 
 var (
-	APPHost string
 	APPPort string
 
 	MySQLHost string
 	MySQLPort string
-	MySQLDB string
+	MySQLDBName string
 	MySQLUserName string
 	MySQLPassword string
 
 	RedisHost string
 	RedisPort string
 
-	FastDFSHost string
-	FastDFSPort string
+	FDFSHost string
+	FDFSPort string
 
 	TimeZone string
 )
 
-func initConfig()  {
-	appConf,err:=config.NewConfig("ini","/root/go/src/190105/conf/app.conf")
+func init()  {
+	cfg,err:=config.NewConfig("ini","/root/go/src/190120/conf/app.conf")
 	if err!=nil {
-		beego.Debug(err)
+		beego.Error(err)
 		return
 	}
-	APPHost=appConf.String("APPHost")
-	APPPort=appConf.String("APPPort")
 
-	MySQLHost=appConf.String("MySQLHost")
-	MySQLPort=appConf.String("MySQLPort")
-	MySQLDB=appConf.String("MySQLDB")
-	MySQLUserName=appConf.String("MySQLUserName")
-	MySQLPassword=appConf.String("MySQLPassword")
+	APPPort=cfg.String("APPPort")
 
-	RedisHost=appConf.String("RedisHost")
-	RedisPort=appConf.String("RedisPort")
+	MySQLHost=cfg.String("MySQLHost")
+	MySQLPort=cfg.String("MySQLPort")
+	MySQLDBName=cfg.String("MySQLDBName")
+	MySQLUserName=cfg.String("MySQLUserName")
+	MySQLPassword=cfg.String("MySQLPassword")
 
-	FastDFSHost=appConf.String("FastDFSHost")
-	FastDFSPort=appConf.String("FastDFSPort")
+	RedisHost=cfg.String("RedisHost")
+	RedisPort=cfg.String("RedisPort")
 
-	TimeZone=appConf.String("TimeZone")
-}
+	FDFSHost=cfg.String("FDFSHost")
+	FDFSPort=cfg.String("FDFSPort")
 
-func init()  {
-	initConfig()
+	TimeZone=cfg.String("TimeZone")
 }

@@ -3,40 +3,39 @@ syntax = "proto3";
 package go.micro.srv.House;
 
 service Example {
-	rpc AddHouse(AddHouseRequest) returns (AddHouseResponse) {}
-	rpc GetUserHouses(GetUserHousesRequest) returns (GetUserHousesResponse) {}
-	rpc UploadHouseImage(UploadHouseImageRequest) returns (UploadHouseImageResponse) {}
+	rpc Add(AddRequest) returns (AddResponse) {}
+	rpc GetHouses(GetHousesRequest) returns (GetHousesResponse) {}
+	rpc UploadImage(UploadImageRequest) returns (UploadImageResponse) {}
 	rpc GetHouseDetail(GetHouseDetailRequest) returns (GetHouseDetailResponse) {}
 	rpc GetIndexBanner(GetIndexBannerRequest) returns (GetIndexBannerResponse) {}
-	rpc SearchHouse(SearchHouseRequest) returns (SearchHouseResponse) {}
+	rpc Search(SearchRequest) returns (SearchResponse) {}
 }
 
 message Message {
 	string say = 1;
 }
 
-message AddHouseRequest {
+message AddRequest {
 	string SessionId = 1;
 	bytes Data = 2;
 }
 
-message AddHouseResponse {
+message AddResponse {
 	string ErrCode = 1;
-	string Msg = 2;
-	int64 HouseId = 3;
+	string ErrMsg = 2;
 }
 
-message GetUserHousesRequest {
+message GetHousesRequest {
 	string SessionId = 1;
 }
 
-message GetUserHousesResponse {
+message GetHousesResponse {
 	string ErrCode = 1;
-	string Msg = 2;
+	string ErrMsg = 2;
 	bytes Data = 3;
 }
 
-message UploadHouseImageRequest {
+message UploadImageRequest {
 	string SessionId = 1;
 	int64 HouseId = 2;
 	bytes Data = 3;
@@ -44,9 +43,9 @@ message UploadHouseImageRequest {
 	string FileName = 5;
 }
 
-message UploadHouseImageResponse {
+message UploadImageResponse {
 	string ErrCode = 1;
-	string Msg = 2;
+	string ErrMsg = 2;
 }
 
 message GetHouseDetailRequest {
@@ -55,7 +54,7 @@ message GetHouseDetailRequest {
 
 message GetHouseDetailResponse {
 	string ErrCode = 1;
-	string Msg = 2;
+	string ErrMsg = 2;
 	bytes Data = 3;
 }
 
@@ -65,21 +64,21 @@ message GetIndexBannerRequest {
 
 message GetIndexBannerResponse {
 	string ErrCode = 1;
-	string Msg = 2;
+	string ErrMsg = 2;
 	bytes Data = 3;
 }
 
-message SearchHouseRequest {
+message SearchRequest {
 	string AreaId = 1;
-	string Page = 2;
-	string StartDate = 3;
-	string EndDate = 4;
+	string StartDate = 2;
+	string EndDate = 3;
+	string Page = 4;
 }
 
-message SearchHouseResponse {
+message SearchResponse {
 	string ErrCode = 1;
-	string Msg = 2;
+	string ErrMsg = 2;
 	bytes Data = 3;
-	int64 totalPages = 4;
-	int64 currentPage = 5;
+	int64 TotalPage = 4;
+	int64 Page = 5;
 }

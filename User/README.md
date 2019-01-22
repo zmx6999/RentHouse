@@ -5,7 +5,7 @@ This is the User service
 Generated with
 
 ```
-micro new 190105/User --namespace=go.micro --type=srv
+micro new 190120/User --namespace=go.micro --type=srv
 ```
 
 ## Getting Started

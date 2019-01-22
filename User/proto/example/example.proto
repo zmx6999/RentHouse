@@ -3,58 +3,58 @@ syntax = "proto3";
 package go.micro.srv.User;
 
 service Example {
-	rpc GetImageCpt(GetImageCptRequest) returns (GetImageCptResponse) {}
-	rpc GetSmsCpt(GetSmsCptRequest) returns (GetSmsCptResponse) {}
+	rpc GetCaptcha(GetCaptchaRequest) returns (GetCaptchaResponse) {}
+	rpc GetSmsCaptcha(GetSmsCaptchaRequest) returns (GetSmsCaptchaResponse) {}
 	rpc Register(RegisterRequest) returns (RegisterResponse) {}
 	rpc Login(LoginRequest) returns (LoginResponse) {}
 	rpc Logout(LogoutRequest) returns (LogoutResponse) {}
-	rpc GetUserInfo(GetUserInfoRequest) returns (GetUserInfoResponse) {}
-	rpc Rename(RenameRequest) returns (RenameResponse) {}
+	rpc Info(InfoRequest) returns (InfoResponse) {}
+	rpc Avatar(AvatarRequest) returns (AvatarResponse) {}
+	rpc UpdateUserName(UpdateUserNameRequest) returns (UpdateUserNameResponse) {}
 	rpc Auth(AuthRequest) returns (AuthResponse) {}
-	rpc UploadAvatar(UploadAvatarRequest) returns (UploadAvatarResponse) {}
 }
 
 message Message {
 	string say = 1;
 }
 
-message GetImageCptRequest {
+message GetCaptchaRequest {
 	string Uuid = 1;
 }
 
-message GetImageCptResponse {
+message GetCaptchaResponse {
 	string ErrCode = 1;
-	string Msg = 2;
+	string ErrMsg = 2;
 	bytes Pix = 3;
 	int64 Stride = 4;
 	message Point {
 		int64 X = 1;
 		int64 Y = 2;
 	}
-	Point Max = 5;
-	Point Min = 6;
+	Point Min = 5;
+	Point Max = 6;
 }
 
-message GetSmsCptRequest {
+message GetSmsCaptchaRequest {
 	string Uuid = 1;
 	string Mobile = 2;
-	string Text = 3;
+	string Captcha = 3;
 }
 
-message GetSmsCptResponse {
+message GetSmsCaptchaResponse {
 	string ErrCode = 1;
-	string Msg = 2;
+	string ErrMsg = 2;
 }
 
 message RegisterRequest {
 	string Mobile = 1;
 	string Password = 2;
-	string Text = 3;
+	string SmsCaptcha = 3;
 }
 
 message RegisterResponse {
 	string ErrCode = 1;
-	string Msg = 2;
+	string ErrMsg = 2;
 	string SessionId = 3;
 }
 
@@ -65,7 +65,7 @@ message LoginRequest {
 
 message LoginResponse {
 	string ErrCode = 1;
-	string Msg = 2;
+	string ErrMsg = 2;
 	string SessionId = 3;
 }
 
@@ -75,27 +75,39 @@ message LogoutRequest {
 
 message LogoutResponse {
 	string ErrCode = 1;
-	string Msg = 2;
+	string ErrMsg = 2;
 }
 
-message GetUserInfoRequest {
+message InfoRequest {
 	string SessionId = 1;
 }
 
-message GetUserInfoResponse {
+message InfoResponse {
 	string ErrCode = 1;
-	string Msg = 2;
+	string ErrMsg = 2;
 	bytes Data = 3;
 }
 
-message RenameRequest {
+message AvatarRequest {
 	string SessionId = 1;
-	string NewName = 2;
+	bytes Data = 2;
+	int64 FileSize = 3;
+	string FileName = 4;
 }
 
-message RenameResponse {
+message AvatarResponse {
 	string ErrCode = 1;
-	string Msg = 2;
+	string ErrMsg = 2;
+}
+
+message UpdateUserNameRequest {
+	string SessionId = 1;
+	string UserName = 2;
+}
+
+message UpdateUserNameResponse {
+	string ErrCode = 1;
+	string ErrMsg = 2;
 }
 
 message AuthRequest {
@@ -106,17 +118,5 @@ message AuthRequest {
 
 message AuthResponse {
 	string ErrCode = 1;
-	string Msg = 2;
-}
-
-message UploadAvatarRequest {
-	string SessionId = 1;
-	bytes Data = 2;
-	string FileName = 3;
-	int64 FileSize = 4;
-}
-
-message UploadAvatarResponse {
-	string ErrCode = 1;
-	string Msg = 2;
+	string ErrMsg = 2;
 }

@@ -16,6 +16,6 @@ message GetAreaRequest {
 
 message GetAreaResponse {
 	string ErrCode = 1;
-	string Msg = 2;
+	string ErrMsg = 2;
 	bytes Data = 3;
 }

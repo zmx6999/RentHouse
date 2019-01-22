@@ -44,7 +44,7 @@ Days int
 House_price int
 Amount int
 Status default 'WAIT_ACCEPT'
-Comment char(512)
+Comment char(512) default ''
 Create_time datetime
 Credit bool
 

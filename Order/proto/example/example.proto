@@ -3,25 +3,24 @@ syntax = "proto3";
 package go.micro.srv.Order;
 
 service Example {
-	rpc AddOrder(AddOrderRequest) returns (AddOrderResponse) {}
+	rpc Add(AddRequest) returns (AddResponse) {}
 	rpc GetOrders(GetOrdersRequest) returns (GetOrdersResponse) {}
-	rpc HandleOrder(HandleOrderRequest) returns (HandleOrderResponse) {}
-	rpc CommentOrder(CommentOrderRequest) returns (CommentOrderResponse) {}
+	rpc Handle(HandleRequest) returns (HandleResponse) {}
+	rpc Comment(CommentRequest) returns (CommentResponse) {}
 }
 
 message Message {
 	string say = 1;
 }
 
-message AddOrderRequest {
+message AddRequest {
 	string SessionId = 1;
 	bytes Data = 2;
 }
 
-message AddOrderResponse {
+message AddResponse {
 	string ErrCode = 1;
-	string Msg = 2;
-	int64 OrderId = 3;
+	string ErrMsg = 2;
 }
 
 message GetOrdersRequest {
@@ -31,28 +30,28 @@ message GetOrdersRequest {
 
 message GetOrdersResponse {
 	string ErrCode = 1;
-	string Msg = 2;
+	string ErrMsg = 2;
 	bytes Data = 3;
 }
 
-message HandleOrderRequest {
+message HandleRequest {
 	string SessionId = 1;
 	int64 OrderId = 2;
 	string Action = 3;
 }
 
-message HandleOrderResponse {
+message HandleResponse {
 	string ErrCode = 1;
-	string Msg = 2;
+	string ErrMsg = 2;
 }
 
-message CommentOrderRequest {
+message CommentRequest {
 	string SessionId = 1;
 	int64 OrderId = 2;
 	string Comment = 3;
 }
 
-message CommentOrderResponse {
+message CommentResponse {
 	string ErrCode = 1;
-	string Msg = 2;
+	string ErrMsg = 2;
 }

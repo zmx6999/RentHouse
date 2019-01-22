@@ -9,18 +9,18 @@ It is generated from these files:
 
 It has these top-level messages:
 	Message
-	AddHouseRequest
-	AddHouseResponse
-	GetUserHousesRequest
-	GetUserHousesResponse
-	UploadHouseImageRequest
-	UploadHouseImageResponse
+	AddRequest
+	AddResponse
+	GetHousesRequest
+	GetHousesResponse
+	UploadImageRequest
+	UploadImageResponse
 	GetHouseDetailRequest
 	GetHouseDetailResponse
 	GetIndexBannerRequest
 	GetIndexBannerResponse
-	SearchHouseRequest
-	SearchHouseResponse
+	SearchRequest
+	SearchResponse
 */
 package go_micro_srv_House
 
@@ -53,12 +53,12 @@ var _ server.Option
 // Client API for Example service
 
 type ExampleService interface {
-	AddHouse(ctx context.Context, in *AddHouseRequest, opts ...client.CallOption) (*AddHouseResponse, error)
-	GetUserHouses(ctx context.Context, in *GetUserHousesRequest, opts ...client.CallOption) (*GetUserHousesResponse, error)
-	UploadHouseImage(ctx context.Context, in *UploadHouseImageRequest, opts ...client.CallOption) (*UploadHouseImageResponse, error)
+	Add(ctx context.Context, in *AddRequest, opts ...client.CallOption) (*AddResponse, error)
+	GetHouses(ctx context.Context, in *GetHousesRequest, opts ...client.CallOption) (*GetHousesResponse, error)
+	UploadImage(ctx context.Context, in *UploadImageRequest, opts ...client.CallOption) (*UploadImageResponse, error)
 	GetHouseDetail(ctx context.Context, in *GetHouseDetailRequest, opts ...client.CallOption) (*GetHouseDetailResponse, error)
 	GetIndexBanner(ctx context.Context, in *GetIndexBannerRequest, opts ...client.CallOption) (*GetIndexBannerResponse, error)
-	SearchHouse(ctx context.Context, in *SearchHouseRequest, opts ...client.CallOption) (*SearchHouseResponse, error)
+	Search(ctx context.Context, in *SearchRequest, opts ...client.CallOption) (*SearchResponse, error)
 }
 
 type exampleService struct {
@@ -79,9 +79,9 @@ func NewExampleService(name string, c client.Client) ExampleService {
 	}
 }
 
-func (c *exampleService) AddHouse(ctx context.Context, in *AddHouseRequest, opts ...client.CallOption) (*AddHouseResponse, error) {
-	req := c.c.NewRequest(c.name, "Example.AddHouse", in)
-	out := new(AddHouseResponse)
+func (c *exampleService) Add(ctx context.Context, in *AddRequest, opts ...client.CallOption) (*AddResponse, error) {
+	req := c.c.NewRequest(c.name, "Example.Add", in)
+	out := new(AddResponse)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -89,9 +89,9 @@ func (c *exampleService) AddHouse(ctx context.Context, in *AddHouseRequest, opts
 	return out, nil
 }
 
-func (c *exampleService) GetUserHouses(ctx context.Context, in *GetUserHousesRequest, opts ...client.CallOption) (*GetUserHousesResponse, error) {
-	req := c.c.NewRequest(c.name, "Example.GetUserHouses", in)
-	out := new(GetUserHousesResponse)
+func (c *exampleService) GetHouses(ctx context.Context, in *GetHousesRequest, opts ...client.CallOption) (*GetHousesResponse, error) {
+	req := c.c.NewRequest(c.name, "Example.GetHouses", in)
+	out := new(GetHousesResponse)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -99,9 +99,9 @@ func (c *exampleService) GetUserHouses(ctx context.Context, in *GetUserHousesReq
 	return out, nil
 }
 
-func (c *exampleService) UploadHouseImage(ctx context.Context, in *UploadHouseImageRequest, opts ...client.CallOption) (*UploadHouseImageResponse, error) {
-	req := c.c.NewRequest(c.name, "Example.UploadHouseImage", in)
-	out := new(UploadHouseImageResponse)
+func (c *exampleService) UploadImage(ctx context.Context, in *UploadImageRequest, opts ...client.CallOption) (*UploadImageResponse, error) {
+	req := c.c.NewRequest(c.name, "Example.UploadImage", in)
+	out := new(UploadImageResponse)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -129,9 +129,9 @@ func (c *exampleService) GetIndexBanner(ctx context.Context, in *GetIndexBannerR
 	return out, nil
 }
 
-func (c *exampleService) SearchHouse(ctx context.Context, in *SearchHouseRequest, opts ...client.CallOption) (*SearchHouseResponse, error) {
-	req := c.c.NewRequest(c.name, "Example.SearchHouse", in)
-	out := new(SearchHouseResponse)
+func (c *exampleService) Search(ctx context.Context, in *SearchRequest, opts ...client.CallOption) (*SearchResponse, error) {
+	req := c.c.NewRequest(c.name, "Example.Search", in)
+	out := new(SearchResponse)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -142,22 +142,22 @@ func (c *exampleService) SearchHouse(ctx context.Context, in *SearchHouseRequest
 // Server API for Example service
 
 type ExampleHandler interface {
-	AddHouse(context.Context, *AddHouseRequest, *AddHouseResponse) error
-	GetUserHouses(context.Context, *GetUserHousesRequest, *GetUserHousesResponse) error
-	UploadHouseImage(context.Context, *UploadHouseImageRequest, *UploadHouseImageResponse) error
+	Add(context.Context, *AddRequest, *AddResponse) error
+	GetHouses(context.Context, *GetHousesRequest, *GetHousesResponse) error
+	UploadImage(context.Context, *UploadImageRequest, *UploadImageResponse) error
 	GetHouseDetail(context.Context, *GetHouseDetailRequest, *GetHouseDetailResponse) error
 	GetIndexBanner(context.Context, *GetIndexBannerRequest, *GetIndexBannerResponse) error
-	SearchHouse(context.Context, *SearchHouseRequest, *SearchHouseResponse) error
+	Search(context.Context, *SearchRequest, *SearchResponse) error
 }
 
 func RegisterExampleHandler(s server.Server, hdlr ExampleHandler, opts ...server.HandlerOption) error {
 	type example interface {
-		AddHouse(ctx context.Context, in *AddHouseRequest, out *AddHouseResponse) error
-		GetUserHouses(ctx context.Context, in *GetUserHousesRequest, out *GetUserHousesResponse) error
-		UploadHouseImage(ctx context.Context, in *UploadHouseImageRequest, out *UploadHouseImageResponse) error
+		Add(ctx context.Context, in *AddRequest, out *AddResponse) error
+		GetHouses(ctx context.Context, in *GetHousesRequest, out *GetHousesResponse) error
+		UploadImage(ctx context.Context, in *UploadImageRequest, out *UploadImageResponse) error
 		GetHouseDetail(ctx context.Context, in *GetHouseDetailRequest, out *GetHouseDetailResponse) error
 		GetIndexBanner(ctx context.Context, in *GetIndexBannerRequest, out *GetIndexBannerResponse) error
-		SearchHouse(ctx context.Context, in *SearchHouseRequest, out *SearchHouseResponse) error
+		Search(ctx context.Context, in *SearchRequest, out *SearchResponse) error
 	}
 	type Example struct {
 		example
@@ -170,16 +170,16 @@ type exampleHandler struct {
 	ExampleHandler
 }
 
-func (h *exampleHandler) AddHouse(ctx context.Context, in *AddHouseRequest, out *AddHouseResponse) error {
-	return h.ExampleHandler.AddHouse(ctx, in, out)
+func (h *exampleHandler) Add(ctx context.Context, in *AddRequest, out *AddResponse) error {
+	return h.ExampleHandler.Add(ctx, in, out)
 }
 
-func (h *exampleHandler) GetUserHouses(ctx context.Context, in *GetUserHousesRequest, out *GetUserHousesResponse) error {
-	return h.ExampleHandler.GetUserHouses(ctx, in, out)
+func (h *exampleHandler) GetHouses(ctx context.Context, in *GetHousesRequest, out *GetHousesResponse) error {
+	return h.ExampleHandler.GetHouses(ctx, in, out)
 }
 
-func (h *exampleHandler) UploadHouseImage(ctx context.Context, in *UploadHouseImageRequest, out *UploadHouseImageResponse) error {
-	return h.ExampleHandler.UploadHouseImage(ctx, in, out)
+func (h *exampleHandler) UploadImage(ctx context.Context, in *UploadImageRequest, out *UploadImageResponse) error {
+	return h.ExampleHandler.UploadImage(ctx, in, out)
 }
 
 func (h *exampleHandler) GetHouseDetail(ctx context.Context, in *GetHouseDetailRequest, out *GetHouseDetailResponse) error {
@@ -190,6 +190,6 @@ func (h *exampleHandler) GetIndexBanner(ctx context.Context, in *GetIndexBannerR
 	return h.ExampleHandler.GetIndexBanner(ctx, in, out)
 }
 
-func (h *exampleHandler) SearchHouse(ctx context.Context, in *SearchHouseRequest, out *SearchHouseResponse) error {
-	return h.ExampleHandler.SearchHouse(ctx, in, out)
+func (h *exampleHandler) Search(ctx context.Context, in *SearchRequest, out *SearchResponse) error {
+	return h.ExampleHandler.Search(ctx, in, out)
 }

@@ -5,7 +5,7 @@ This is the Order service
 Generated with
 
 ```
-micro new 190105/Order --namespace=go.micro --type=srv
+micro new 190120/Order --namespace=go.micro --type=srv
 ```
 
 ## Getting Started

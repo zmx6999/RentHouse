@@ -9,24 +9,24 @@ It is generated from these files:
 
 It has these top-level messages:
 	Message
-	GetImageCptRequest
-	GetImageCptResponse
-	GetSmsCptRequest
-	GetSmsCptResponse
+	GetCaptchaRequest
+	GetCaptchaResponse
+	GetSmsCaptchaRequest
+	GetSmsCaptchaResponse
 	RegisterRequest
 	RegisterResponse
 	LoginRequest
 	LoginResponse
 	LogoutRequest
 	LogoutResponse
-	GetUserInfoRequest
-	GetUserInfoResponse
-	RenameRequest
-	RenameResponse
+	InfoRequest
+	InfoResponse
+	AvatarRequest
+	AvatarResponse
+	UpdateUserNameRequest
+	UpdateUserNameResponse
 	AuthRequest
 	AuthResponse
-	UploadAvatarRequest
-	UploadAvatarResponse
 */
 package go_micro_srv_User
 
@@ -59,15 +59,15 @@ var _ server.Option
 // Client API for Example service
 
 type ExampleService interface {
-	GetImageCpt(ctx context.Context, in *GetImageCptRequest, opts ...client.CallOption) (*GetImageCptResponse, error)
-	GetSmsCpt(ctx context.Context, in *GetSmsCptRequest, opts ...client.CallOption) (*GetSmsCptResponse, error)
+	GetCaptcha(ctx context.Context, in *GetCaptchaRequest, opts ...client.CallOption) (*GetCaptchaResponse, error)
+	GetSmsCaptcha(ctx context.Context, in *GetSmsCaptchaRequest, opts ...client.CallOption) (*GetSmsCaptchaResponse, error)
 	Register(ctx context.Context, in *RegisterRequest, opts ...client.CallOption) (*RegisterResponse, error)
 	Login(ctx context.Context, in *LoginRequest, opts ...client.CallOption) (*LoginResponse, error)
 	Logout(ctx context.Context, in *LogoutRequest, opts ...client.CallOption) (*LogoutResponse, error)
-	GetUserInfo(ctx context.Context, in *GetUserInfoRequest, opts ...client.CallOption) (*GetUserInfoResponse, error)
-	Rename(ctx context.Context, in *RenameRequest, opts ...client.CallOption) (*RenameResponse, error)
+	Info(ctx context.Context, in *InfoRequest, opts ...client.CallOption) (*InfoResponse, error)
+	Avatar(ctx context.Context, in *AvatarRequest, opts ...client.CallOption) (*AvatarResponse, error)
+	UpdateUserName(ctx context.Context, in *UpdateUserNameRequest, opts ...client.CallOption) (*UpdateUserNameResponse, error)
 	Auth(ctx context.Context, in *AuthRequest, opts ...client.CallOption) (*AuthResponse, error)
-	UploadAvatar(ctx context.Context, in *UploadAvatarRequest, opts ...client.CallOption) (*UploadAvatarResponse, error)
 }
 
 type exampleService struct {
@@ -88,9 +88,9 @@ func NewExampleService(name string, c client.Client) ExampleService {
 	}
 }
 
-func (c *exampleService) GetImageCpt(ctx context.Context, in *GetImageCptRequest, opts ...client.CallOption) (*GetImageCptResponse, error) {
-	req := c.c.NewRequest(c.name, "Example.GetImageCpt", in)
-	out := new(GetImageCptResponse)
+func (c *exampleService) GetCaptcha(ctx context.Context, in *GetCaptchaRequest, opts ...client.CallOption) (*GetCaptchaResponse, error) {
+	req := c.c.NewRequest(c.name, "Example.GetCaptcha", in)
+	out := new(GetCaptchaResponse)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -98,9 +98,9 @@ func (c *exampleService) GetImageCpt(ctx context.Context, in *GetImageCptRequest
 	return out, nil
 }
 
-func (c *exampleService) GetSmsCpt(ctx context.Context, in *GetSmsCptRequest, opts ...client.CallOption) (*GetSmsCptResponse, error) {
-	req := c.c.NewRequest(c.name, "Example.GetSmsCpt", in)
-	out := new(GetSmsCptResponse)
+func (c *exampleService) GetSmsCaptcha(ctx context.Context, in *GetSmsCaptchaRequest, opts ...client.CallOption) (*GetSmsCaptchaResponse, error) {
+	req := c.c.NewRequest(c.name, "Example.GetSmsCaptcha", in)
+	out := new(GetSmsCaptchaResponse)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -138,9 +138,9 @@ func (c *exampleService) Logout(ctx context.Context, in *LogoutRequest, opts ...
 	return out, nil
 }
 
-func (c *exampleService) GetUserInfo(ctx context.Context, in *GetUserInfoRequest, opts ...client.CallOption) (*GetUserInfoResponse, error) {
-	req := c.c.NewRequest(c.name, "Example.GetUserInfo", in)
-	out := new(GetUserInfoResponse)
+func (c *exampleService) Info(ctx context.Context, in *InfoRequest, opts ...client.CallOption) (*InfoResponse, error) {
+	req := c.c.NewRequest(c.name, "Example.Info", in)
+	out := new(InfoResponse)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -148,9 +148,19 @@ func (c *exampleService) GetUserInfo(ctx context.Context, in *GetUserInfoRequest
 	return out, nil
 }
 
-func (c *exampleService) Rename(ctx context.Context, in *RenameRequest, opts ...client.CallOption) (*RenameResponse, error) {
-	req := c.c.NewRequest(c.name, "Example.Rename", in)
-	out := new(RenameResponse)
+func (c *exampleService) Avatar(ctx context.Context, in *AvatarRequest, opts ...client.CallOption) (*AvatarResponse, error) {
+	req := c.c.NewRequest(c.name, "Example.Avatar", in)
+	out := new(AvatarResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *exampleService) UpdateUserName(ctx context.Context, in *UpdateUserNameRequest, opts ...client.CallOption) (*UpdateUserNameResponse, error) {
+	req := c.c.NewRequest(c.name, "Example.UpdateUserName", in)
+	out := new(UpdateUserNameResponse)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -168,41 +178,31 @@ func (c *exampleService) Auth(ctx context.Context, in *AuthRequest, opts ...clie
 	return out, nil
 }
 
-func (c *exampleService) UploadAvatar(ctx context.Context, in *UploadAvatarRequest, opts ...client.CallOption) (*UploadAvatarResponse, error) {
-	req := c.c.NewRequest(c.name, "Example.UploadAvatar", in)
-	out := new(UploadAvatarResponse)
-	err := c.c.Call(ctx, req, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // Server API for Example service
 
 type ExampleHandler interface {
-	GetImageCpt(context.Context, *GetImageCptRequest, *GetImageCptResponse) error
-	GetSmsCpt(context.Context, *GetSmsCptRequest, *GetSmsCptResponse) error
+	GetCaptcha(context.Context, *GetCaptchaRequest, *GetCaptchaResponse) error
+	GetSmsCaptcha(context.Context, *GetSmsCaptchaRequest, *GetSmsCaptchaResponse) error
 	Register(context.Context, *RegisterRequest, *RegisterResponse) error
 	Login(context.Context, *LoginRequest, *LoginResponse) error
 	Logout(context.Context, *LogoutRequest, *LogoutResponse) error
-	GetUserInfo(context.Context, *GetUserInfoRequest, *GetUserInfoResponse) error
-	Rename(context.Context, *RenameRequest, *RenameResponse) error
+	Info(context.Context, *InfoRequest, *InfoResponse) error
+	Avatar(context.Context, *AvatarRequest, *AvatarResponse) error
+	UpdateUserName(context.Context, *UpdateUserNameRequest, *UpdateUserNameResponse) error
 	Auth(context.Context, *AuthRequest, *AuthResponse) error
-	UploadAvatar(context.Context, *UploadAvatarRequest, *UploadAvatarResponse) error
 }
 
 func RegisterExampleHandler(s server.Server, hdlr ExampleHandler, opts ...server.HandlerOption) error {
 	type example interface {
-		GetImageCpt(ctx context.Context, in *GetImageCptRequest, out *GetImageCptResponse) error
-		GetSmsCpt(ctx context.Context, in *GetSmsCptRequest, out *GetSmsCptResponse) error
+		GetCaptcha(ctx context.Context, in *GetCaptchaRequest, out *GetCaptchaResponse) error
+		GetSmsCaptcha(ctx context.Context, in *GetSmsCaptchaRequest, out *GetSmsCaptchaResponse) error
 		Register(ctx context.Context, in *RegisterRequest, out *RegisterResponse) error
 		Login(ctx context.Context, in *LoginRequest, out *LoginResponse) error
 		Logout(ctx context.Context, in *LogoutRequest, out *LogoutResponse) error
-		GetUserInfo(ctx context.Context, in *GetUserInfoRequest, out *GetUserInfoResponse) error
-		Rename(ctx context.Context, in *RenameRequest, out *RenameResponse) error
+		Info(ctx context.Context, in *InfoRequest, out *InfoResponse) error
+		Avatar(ctx context.Context, in *AvatarRequest, out *AvatarResponse) error
+		UpdateUserName(ctx context.Context, in *UpdateUserNameRequest, out *UpdateUserNameResponse) error
 		Auth(ctx context.Context, in *AuthRequest, out *AuthResponse) error
-		UploadAvatar(ctx context.Context, in *UploadAvatarRequest, out *UploadAvatarResponse) error
 	}
 	type Example struct {
 		example
@@ -215,12 +215,12 @@ type exampleHandler struct {
 	ExampleHandler
 }
 
-func (h *exampleHandler) GetImageCpt(ctx context.Context, in *GetImageCptRequest, out *GetImageCptResponse) error {
-	return h.ExampleHandler.GetImageCpt(ctx, in, out)
+func (h *exampleHandler) GetCaptcha(ctx context.Context, in *GetCaptchaRequest, out *GetCaptchaResponse) error {
+	return h.ExampleHandler.GetCaptcha(ctx, in, out)
 }
 
-func (h *exampleHandler) GetSmsCpt(ctx context.Context, in *GetSmsCptRequest, out *GetSmsCptResponse) error {
-	return h.ExampleHandler.GetSmsCpt(ctx, in, out)
+func (h *exampleHandler) GetSmsCaptcha(ctx context.Context, in *GetSmsCaptchaRequest, out *GetSmsCaptchaResponse) error {
+	return h.ExampleHandler.GetSmsCaptcha(ctx, in, out)
 }
 
 func (h *exampleHandler) Register(ctx context.Context, in *RegisterRequest, out *RegisterResponse) error {
@@ -235,18 +235,18 @@ func (h *exampleHandler) Logout(ctx context.Context, in *LogoutRequest, out *Log
 	return h.ExampleHandler.Logout(ctx, in, out)
 }
 
-func (h *exampleHandler) GetUserInfo(ctx context.Context, in *GetUserInfoRequest, out *GetUserInfoResponse) error {
-	return h.ExampleHandler.GetUserInfo(ctx, in, out)
+func (h *exampleHandler) Info(ctx context.Context, in *InfoRequest, out *InfoResponse) error {
+	return h.ExampleHandler.Info(ctx, in, out)
 }
 
-func (h *exampleHandler) Rename(ctx context.Context, in *RenameRequest, out *RenameResponse) error {
-	return h.ExampleHandler.Rename(ctx, in, out)
+func (h *exampleHandler) Avatar(ctx context.Context, in *AvatarRequest, out *AvatarResponse) error {
+	return h.ExampleHandler.Avatar(ctx, in, out)
+}
+
+func (h *exampleHandler) UpdateUserName(ctx context.Context, in *UpdateUserNameRequest, out *UpdateUserNameResponse) error {
+	return h.ExampleHandler.UpdateUserName(ctx, in, out)
 }
 
 func (h *exampleHandler) Auth(ctx context.Context, in *AuthRequest, out *AuthResponse) error {
 	return h.ExampleHandler.Auth(ctx, in, out)
-}
-
-func (h *exampleHandler) UploadAvatar(ctx context.Context, in *UploadAvatarRequest, out *UploadAvatarResponse) error {
-	return h.ExampleHandler.UploadAvatar(ctx, in, out)
 }

@@ -23,7 +23,7 @@ const (
 	RECODE_UNKNOWERR  = "4501"
 )
 
-var recodeText  = map[string]string {
+var recodeText = map[string]string{
 	RECODE_OK:         "成功",
 	RECODE_DBERR:      "数据库查询错误",
 	RECODE_NODATA:     "无数据",
@@ -46,9 +46,8 @@ var recodeText  = map[string]string {
 }
 
 func RecodeText(code string) string {
-	str,ok:=recodeText[code]
-	if ok {
-		return str
+	if r,ok:=recodeText[code];ok {
+		return r
 	}
 	return recodeText[RECODE_UNKNOWERR]
 }

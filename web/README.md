@@ -5,7 +5,7 @@ This is the Web service
 Generated with
 
 ```
-micro new 190105/web --namespace=go.micro --type=web
+micro new 190120/web --namespace=go.micro --type=web
 ```
 
 ## Getting Started

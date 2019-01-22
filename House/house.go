@@ -3,17 +3,17 @@ package main
 import (
 	"github.com/micro/go-log"
 	"github.com/micro/go-micro"
-	"190105/Order/handler"
-	"190105/Order/subscriber"
+	"190120/House/handler"
+	"190120/House/subscriber"
 
-	example "190105/Order/proto/example"
+	example "190120/House/proto/example"
 	"github.com/micro/go-grpc"
 )
 
 func main() {
 	// New Service
 	service := grpc.NewService(
-		micro.Name("go.micro.srv.Order"),
+		micro.Name("go.micro.srv.House"),
 		micro.Version("latest"),
 	)
 
@@ -24,10 +24,10 @@ func main() {
 	example.RegisterExampleHandler(service.Server(), new(handler.Example))
 
 	// Register Struct as Subscriber
-	micro.RegisterSubscriber("go.micro.srv.Order", service.Server(), new(subscriber.Example))
+	micro.RegisterSubscriber("go.micro.srv.House", service.Server(), new(subscriber.Example))
 
 	// Register Function as Subscriber
-	micro.RegisterSubscriber("go.micro.srv.Order", service.Server(), subscriber.Handler)
+	micro.RegisterSubscriber("go.micro.srv.House", service.Server(), subscriber.Handler)
 
 	// Run service
 	if err := service.Run(); err != nil {
