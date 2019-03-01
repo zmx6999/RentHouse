@@ -1,0 +1,70 @@
+{
+  "domain": "house.com",
+  "cas": [
+    {
+      "peer_org_name": "OrgRenting",
+      "ports": [
+        "7054"
+      ],
+      "admin_name": "admin",
+      "admin_password": "adminpw"
+    }
+  ],
+  "zookeepers": [
+    {
+      "host_name": "zookeeper2",
+      "ports": [
+        "2181",
+        "2888",
+        "3888"
+      ],
+      "zoo_my_id": "3",
+      "zoo_servers": "server.1=zookeeper0:2888:3888 server.2=zookeeper1:2888:3888 server.3=zookeeper2:2888:3888"
+    }
+  ],
+  "kafkas": [
+    {
+      "host_name": "kafka2",
+      "broker_id": "2",
+      "zookeepers": [
+        "zookeeper0:2181",
+        "zookeeper1:2181",
+        "zookeeper2:2181"
+      ]
+    }
+  ],
+  "peers": [
+    {
+      "peer_name": "peer0",
+      "org_name": "OrgRenting",
+      "ports": [
+        "7051",
+        "7052",
+        "7053"
+      ]
+    }
+  ],
+  "clis": [
+    {
+      "cli_name": "cli",
+      "core_peer_name": "peer0",
+      "core_peer_org": "OrgRenting",
+      "depends": [
+        "peer0.orgrenting.house.com"
+      ]
+    }
+  ],
+  "hosts": [
+    "zookeeper0:139.180.146.33",
+    "kafka0:139.180.146.33",
+    "orderer0.house.com:139.180.146.33",
+    "zookeeper1:139.180.138.179",
+    "kafka1:139.180.138.179",
+    "orderer1.house.com:139.180.138.179",
+    "zookeeper2:45.77.250.9",
+    "kafka2:45.77.250.9",
+    "peer0.orgrenting.house.com:45.77.250.9",
+    "kafka3:149.28.157.54",
+    "peer1.orgrenting.house.com:149.28.157.54"
+  ]
+}

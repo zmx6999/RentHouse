@@ -1,3 +1,3 @@
 FROM alpine:3.2
-ADD Area-srv /Area-srv
-ENTRYPOINT [ "/Area-srv" ]
+ADD area-srv /area-srv
+ENTRYPOINT [ "/area-srv" ]

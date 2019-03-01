@@ -5,7 +5,7 @@ This is the User service
 Generated with
 
 ```
-micro new 190120/User --namespace=go.micro --type=srv
+micro new 190222/user --namespace=go.micro --type=srv
 ```
 
 ## Getting Started
@@ -16,9 +16,9 @@ micro new 190120/User --namespace=go.micro --type=srv
 
 ## Configuration
 
-- FQDN: go.micro.srv.User
+- FQDN: go.micro.srv.user
 - Type: srv
-- Alias: User
+- Alias: user
 
 ## Dependencies
 
@@ -44,7 +44,7 @@ make build
 
 Run the service
 ```
-./User-srv
+./user-srv
 ```
 
 Build a docker image

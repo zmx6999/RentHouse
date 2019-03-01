@@ -2,7 +2,7 @@
 // source: proto/example/example.proto
 
 /*
-Package go_micro_srv_Area is a generated protocol buffer package.
+Package go_micro_srv_area is a generated protocol buffer package.
 
 It is generated from these files:
 	proto/example/example.proto
@@ -12,7 +12,7 @@ It has these top-level messages:
 	GetAreaRequest
 	GetAreaResponse
 */
-package go_micro_srv_Area
+package go_micro_srv_area
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
@@ -56,7 +56,7 @@ func NewExampleService(name string, c client.Client) ExampleService {
 		c = client.NewClient()
 	}
 	if len(name) == 0 {
-		name = "go.micro.srv.Area"
+		name = "go.micro.srv.area"
 	}
 	return &exampleService{
 		c:    c,

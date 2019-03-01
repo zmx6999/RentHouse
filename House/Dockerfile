@@ -1,3 +1,3 @@
 FROM alpine:3.2
-ADD House-srv /House-srv
-ENTRYPOINT [ "/House-srv" ]
+ADD house-srv /house-srv
+ENTRYPOINT [ "/house-srv" ]

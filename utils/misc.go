@@ -3,30 +3,23 @@ package utils
 import (
 	"net/http"
 	"mime/multipart"
-	"strings"
 	"path"
 	"errors"
-	"github.com/weilaihui/fdfs_client"
-	"crypto/sha512"
-	"encoding/hex"
-	"github.com/garyburd/redigo/redis"
+	"strings"
+		"github.com/weilaihui/fdfs_client"
 )
 
-const (
-	ORDER_STATUS_WAIT_ACCEPT= "WAIT_ACCEPT"
-	ORDER_STATUS_WAIT_PAYMENT= "WAIT_PAYMENT"
-	ORDER_STATUS_PAID= "PAID"
-	ORDER_STATUS_WAIT_COMMENT= "WAIT_COMMENT"
-	ORDER_STATUS_COMPLETE= "COMPLETE"
-	ORDER_STATUS_CANCELED= "CONCELED"
-	ORDER_STATUS_REJECTED= "REJECTED"
-)
-
-func AddDomain2Url(url string) string {
-	return "http://"+FDFSHost+":"+FDFSPort+"/"+url
+func Find(x string,a []string) int {
+	n:=len(a)
+	for i:=0; i<n; i++ {
+		if a[i]==x {
+			return i
+		}
+	}
+	return -1
 }
 
-func PrepareUpload(r *http.Request,key string,allowedTypes []string,allowedMaxSize int64) ([]byte,*multipart.FileHeader,error) {
+func PrepareUploadFile(r *http.Request,key string,allowTypes []string,allowMaxSize int) ([]byte,*multipart.FileHeader,error) {
 	file,head,err:=r.FormFile(key)
 	if err!=nil {
 		return nil,nil,err
@@ -34,10 +27,10 @@ func PrepareUpload(r *http.Request,key string,allowedTypes []string,allowedMaxSi
 	defer file.Close()
 
 	ext:=strings.ToLower(path.Ext(head.Filename))
-	if Find(allowedTypes,ext[1:])<0 {
-		return nil,nil,errors.New("FILE TYPES CAN ONLY BE "+strings.Join(allowedTypes,","))
+	if Find(ext[1:],allowTypes)<0 {
+		return nil,nil,errors.New("FILE TYPE SHOULD BE "+strings.Join(allowTypes,","))
 	}
-	if head.Size>allowedMaxSize {
+	if head.Size>int64(allowMaxSize) {
 		return nil,nil,errors.New("FILE SIZE EXCEEDS")
 	}
 
@@ -46,55 +39,29 @@ func PrepareUpload(r *http.Request,key string,allowedTypes []string,allowedMaxSi
 	if err!=nil {
 		return nil,nil,err
 	}
+
 	return data,head,nil
 }
 
 func UploadFile(data []byte,ext string) (string,error) {
-	client,err:=fdfs_client.NewFdfsClient("/etc/fdfs/client.conf")
+	client,err:=fdfs_client.NewFdfsClient(FDFSConfig)
 	if err!=nil {
 		return "",err
 	}
-	re,err:=client.UploadByBuffer(data,ext)
-	if err!=nil {
-		return "",err
-	}
-	return re.RemoteFileId,nil
-}
 
-func Find(a []string,x string) int {
-	for i:=0; i<len(a); i++ {
-		if a[i]==x {
-			return i
-		}
+	r,err:=client.UploadByBuffer(data,ext)
+	if err!=nil {
+		return "",err
 	}
-	return -1
+
+	return r.RemoteFileId,nil
 }
 
 func GetParam(key string,r *http.Request) string {
-	q:=r.URL.Query()
-	if len(q[key])>0 {
-		return q[key][0]
+	q:=r.URL.Query()[key]
+	if len(q)>0 {
+		return q[0]
 	} else {
 		return ""
 	}
-}
-
-func Sha512Str(x string) string {
-	h:=sha512.New()
-	h.Write([]byte(x))
-	return hex.EncodeToString(h.Sum(nil))
-}
-
-func GetUserId(sessionId string) (int,error) {
-	conn,err:=redis.Dial("tcp",RedisHost+":"+RedisPort)
-	if err!=nil {
-		return 0,err
-	}
-	defer conn.Close()
-
-	userId,err:=redis.Int(conn.Do("get",sessionId+"_user_id"))
-	if err!=nil {
-		return 0,err
-	}
-	return userId,nil
 }

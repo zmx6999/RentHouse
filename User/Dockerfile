@@ -1,3 +1,3 @@
 FROM alpine:3.2
-ADD User-srv /User-srv
-ENTRYPOINT [ "/User-srv" ]
+ADD user-srv /user-srv
+ENTRYPOINT [ "/user-srv" ]

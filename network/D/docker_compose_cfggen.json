@@ -1,0 +1,48 @@
+{
+  "domain": "house.com",
+  "cas": [
+    {
+      "peer_org_name": "OrgRenting",
+      "ports": [
+        "7054"
+      ],
+      "admin_name": "admin",
+      "admin_password": "adminpw"
+    }
+  ],
+  "kafkas": [
+    {
+      "host_name": "kafka3",
+      "broker_id": "3",
+      "zookeepers": [
+        "zookeeper0:2181",
+        "zookeeper1:2181",
+        "zookeeper2:2181"
+      ]
+    }
+  ],
+  "peers": [
+    {
+      "peer_name": "peer1",
+      "org_name": "OrgRenting",
+      "ports": [
+        "8051",
+        "8052",
+        "8053"
+      ]
+    }
+  ],
+  "hosts": [
+    "zookeeper0:139.180.146.33",
+    "kafka0:139.180.146.33",
+    "orderer0.house.com:139.180.146.33",
+    "zookeeper1:139.180.138.179",
+    "kafka1:139.180.138.179",
+    "orderer1.house.com:139.180.138.179",
+    "zookeeper2:45.77.250.9",
+    "kafka2:45.77.250.9",
+    "peer0.orgrenting.house.com:45.77.250.9",
+    "kafka3:149.28.157.54",
+    "peer1.orgrenting.house.com:149.28.157.54"
+  ]
+}

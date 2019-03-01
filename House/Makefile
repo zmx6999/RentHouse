@@ -9,10 +9,10 @@ proto:
 
 build: proto
 
-	go build -o House-srv main.go plugin.go
+	go build -o house-srv main.go plugin.go
 
 test:
 	go test -v ./... -cover
 
 docker:
-	docker build . -t House-srv:latest
+	docker build . -t house-srv:latest

@@ -3,229 +3,123 @@ package handler
 import (
 	"context"
 
-		example "190120/Order/proto/example"
-	"190120/utils"
+		example "190222/order/proto/example"
 	"encoding/json"
-	"strconv"
-	"time"
-	"math"
-	"github.com/astaxie/beego/orm"
-	"190120/models"
-	"github.com/garyburd/redigo/redis"
+	"190222/utils"
+	"190222/models"
 )
 
 type Example struct{}
 
 // Call is a single request handler called via client.Call or the generated client code
 func (e *Example) Add(ctx context.Context, req *example.AddRequest, rsp *example.AddResponse) error {
-	rsp.ErrCode=utils.RECODE_OK
-	rsp.ErrMsg=utils.RecodeText(rsp.ErrCode)
-
-	userId,err:=utils.GetUserId(req.SessionId)
-	if err!=nil {
-		rsp.ErrCode=utils.RECODE_SESSIONERR
-		rsp.ErrMsg=utils.RecodeText(rsp.ErrCode)
-		return nil
-	}
-
 	var data map[string]interface{}
-	json.Unmarshal(req.Data,&data)
-
-	houseId,_:=strconv.Atoi(data["house_id"].(string))
-	startDate:=data["start_date"].(string)
-	start,_:=time.Parse("2006-01-02 15:04:05",startDate+" 00:00:00")
-	endDate:=data["end_date"].(string)
-	end,_:=time.Parse("2006-01-02 15:04:05",endDate+" 00:00:00")
-	days:=int(math.Ceil(float64(end.Sub(start).Seconds())/60/60/24))+1
-
-	o:=orm.NewOrm()
-	var house models.House
-	if err=o.QueryTable("House").RelatedSel("User").Filter("Id",houseId).One(&house);err!=nil {
-		rsp.ErrCode=utils.RECODE_NODATA
-		rsp.ErrMsg=utils.RecodeText(rsp.ErrCode)
-		return nil
+	err:=json.Unmarshal(req.Data,&data)
+	if err!=nil {
+		return err
 	}
 
-	if house.User.Id==userId {
-		rsp.ErrCode=utils.RECODE_ROLEERR
-		rsp.ErrMsg=utils.RecodeText(rsp.ErrCode)
-		return nil
+	ccs,err:=models.Initialize(utils.ChannelId,utils.User,utils.ChaincodeId,utils.FabricSDKConfig)
+	if err!=nil {
+		return err
+	}
+	defer ccs.Close()
+
+	userId,err:=ccs.GetUserId(data["mobile"].(string))
+	if err!=nil {
+		return err
 	}
 
-	price:=house.Price
-	amount:=price*days
-	status:=utils.ORDER_STATUS_WAIT_ACCEPT
-
-	user:=models.User{Id:userId}
-
-	order:=models.Order{
-		Begin_date:start,
-		End_date:end,
-		Days:days,
-		House_price:price,
-		Amount:amount,
-		Status:status,
-		Credit:false,
-		House:&house,
-		User:&user,
+	_,err=ccs.ChaincodeUpdate("addOrder",[][]byte{
+		[]byte(userId),
+		[]byte(data["house_id"].(string)),
+		[]byte(data["start_date"].(string)),
+		[]byte(data["end_date"].(string)),
+	})
+	if err!=nil {
+		return err
 	}
-	loc,_:=time.LoadLocation(utils.TimeZone)
-	order.Create_time=time.Now().In(loc)
 
-	if _,err=o.Insert(&order);err!=nil {
-		rsp.ErrCode=utils.RECODE_DBERR
-		rsp.ErrMsg=utils.RecodeText(rsp.ErrCode)
-		return nil
-	}
+	rsp.Code=utils.RECODE_OK
+	rsp.Msg=utils.RecodeText(rsp.Code)
 
 	return nil
 }
 
-func (e *Example) GetOrders(ctx context.Context, req *example.GetOrdersRequest, rsp *example.GetOrdersResponse) error {
-	rsp.ErrCode=utils.RECODE_OK
-	rsp.ErrMsg=utils.RecodeText(rsp.ErrCode)
-
-	userId,err:=utils.GetUserId(req.SessionId)
+func (e *Example) GetList(ctx context.Context, req *example.GetListRequest, rsp *example.GetListResponse) error {
+	ccs,err:=models.Initialize(utils.ChannelId,utils.User,utils.ChaincodeId,utils.FabricSDKConfig)
 	if err!=nil {
-		rsp.ErrCode=utils.RECODE_SESSIONERR
-		rsp.ErrMsg=utils.RecodeText(rsp.ErrCode)
-		return nil
+		return err
+	}
+	defer ccs.Close()
+
+	userId,err:=ccs.GetUserId(req.Mobile)
+	if err!=nil {
+		return err
 	}
 
-	o:=orm.NewOrm()
-	var _orders []*models.Order
-	if req.Role=="landlord" {
-		var houses []*models.House
-		if _,err=o.QueryTable("House").RelatedSel("User").Filter("User__Id",userId).All(&houses);err!=nil {
-			rsp.ErrCode=utils.RECODE_NODATA
-			rsp.ErrMsg=utils.RecodeText(rsp.ErrCode)
-			return nil
-		}
-
-		houseIds:=[]int{-1}
-		for _,v:=range houses{
-			houseIds=append(houseIds,v.Id)
-		}
-
-		if _,err=o.QueryTable("Order").RelatedSel("House").Filter("House__Id__in",houseIds).All(&_orders);err!=nil {
-			rsp.ErrCode=utils.RECODE_NODATA
-			rsp.ErrMsg=utils.RecodeText(rsp.ErrCode)
-			return nil
-		}
-	} else {
-		if _,err=o.QueryTable("Order").RelatedSel("House").RelatedSel("User").Filter("User__Id",userId).All(&_orders);err!=nil {
-			rsp.ErrCode=utils.RECODE_NODATA
-			rsp.ErrMsg=utils.RecodeText(rsp.ErrCode)
-			return nil
-		}
+	data,err:=ccs.ChaincodeQuery("getOrderList",[][]byte{[]byte(userId),[]byte(req.Role)})
+	if err!=nil {
+		return err
 	}
 
-	var orders []map[string]interface{}
-	for _,v:=range _orders{
-		order:=v.Info()
-		orders=append(orders,order)
-	}
-	data,_:=json.Marshal(orders)
 	rsp.Data=data
+	rsp.Code=utils.RECODE_OK
+	rsp.Msg=utils.RecodeText(rsp.Code)
 
 	return nil
 }
 
 func (e *Example) Handle(ctx context.Context, req *example.HandleRequest, rsp *example.HandleResponse) error {
-	rsp.ErrCode=utils.RECODE_OK
-	rsp.ErrMsg=utils.RecodeText(rsp.ErrCode)
-
-	userId,err:=utils.GetUserId(req.SessionId)
+	ccs,err:=models.Initialize(utils.ChannelId,utils.User,utils.ChaincodeId,utils.FabricSDKConfig)
 	if err!=nil {
-		rsp.ErrCode=utils.RECODE_SESSIONERR
-		rsp.ErrMsg=utils.RecodeText(rsp.ErrCode)
-		return nil
+		return err
+	}
+	defer ccs.Close()
+
+	userId,err:=ccs.GetUserId(req.Mobile)
+	if err!=nil {
+		return err
 	}
 
-	var order models.Order
-	o:=orm.NewOrm()
-	if err=o.QueryTable("Order").RelatedSel("House").Filter("Id",req.OrderId).Filter("Status",utils.ORDER_STATUS_WAIT_ACCEPT).One(&order);err!=nil {
-		rsp.ErrCode=utils.RECODE_NODATA
-		rsp.ErrMsg=utils.RecodeText(rsp.ErrCode)
-		return nil
+	_,err=ccs.ChaincodeUpdate("handleOrder",[][]byte{
+		[]byte(req.OrderId),
+		[]byte(userId),
+		[]byte(req.Action),
+	})
+	if err!=nil {
+		return err
 	}
 
-	house:=order.House
-	if _,err=o.LoadRelated(house,"User");err!=nil {
-		rsp.ErrCode=utils.RECODE_NODATA
-		rsp.ErrMsg=utils.RecodeText(rsp.ErrCode)
-		return nil
-	}
-
-	if house.User.Id!=userId {
-		rsp.ErrCode=utils.RECODE_ROLEERR
-		rsp.ErrMsg=utils.RecodeText(rsp.ErrCode)
-		return nil
-	}
-
-	o.Begin()
-
-	if req.Action=="reject" {
-		order.Status=utils.ORDER_STATUS_REJECTED
-	} else {
-		house.Order_count++
-		if _,err=o.Update(house,"Order_count");err!=nil {
-			o.Rollback()
-			rsp.ErrCode=utils.RECODE_DBERR
-			rsp.ErrMsg=utils.RecodeText(rsp.ErrCode)
-			return nil
-		}
-		order.Status=utils.ORDER_STATUS_WAIT_COMMENT
-	}
-	if _,err=o.Update(&order,"Status");err!=nil {
-		o.Rollback()
-		rsp.ErrCode=utils.RECODE_DBERR
-		rsp.ErrMsg=utils.RecodeText(rsp.ErrCode)
-		return nil
-	}
-
-	o.Commit()
+	rsp.Code=utils.RECODE_OK
+	rsp.Msg=utils.RecodeText(rsp.Code)
 
 	return nil
 }
 
 func (e *Example) Comment(ctx context.Context, req *example.CommentRequest, rsp *example.CommentResponse) error {
-	rsp.ErrCode=utils.RECODE_OK
-	rsp.ErrMsg=utils.RecodeText(rsp.ErrCode)
-
-	userId,err:=utils.GetUserId(req.SessionId)
+	ccs,err:=models.Initialize(utils.ChannelId,utils.User,utils.ChaincodeId,utils.FabricSDKConfig)
 	if err!=nil {
-		rsp.ErrCode=utils.RECODE_SESSIONERR
-		rsp.ErrMsg=utils.RecodeText(rsp.ErrCode)
-		return nil
+		return err
 	}
+	defer ccs.Close()
 
-	var order models.Order
-	o:=orm.NewOrm()
-	if err=o.QueryTable("Order").RelatedSel("House").RelatedSel("User").Filter("Id",req.OrderId).Filter("Status",utils.ORDER_STATUS_WAIT_COMMENT).Filter("User__Id",userId).One(&order);err!=nil {
-		rsp.ErrCode=utils.RECODE_NODATA
-		rsp.ErrMsg=utils.RecodeText(rsp.ErrCode)
-		return nil
-	}
-
-	order.Comment=req.Comment
-	order.Status=utils.ORDER_STATUS_COMPLETE
-	if _,err=o.Update(&order,"Comment","Status");err!=nil {
-		o.Rollback()
-		rsp.ErrCode=utils.RECODE_DBERR
-		rsp.ErrMsg=utils.RecodeText(rsp.ErrCode)
-		return nil
-	}
-
-	conn,err:=redis.Dial("tcp",utils.RedisHost+":"+utils.RedisPort)
+	userId,err:=ccs.GetUserId(req.Mobile)
 	if err!=nil {
-		rsp.ErrCode=utils.RECODE_DBERR
-		rsp.ErrMsg=utils.RecodeText(rsp.ErrCode)
-		return nil
+		return err
 	}
-	defer conn.Close()
 
-	conn.Do("del","house_"+strconv.Itoa(order.House.Id))
+	_,err=ccs.ChaincodeUpdate("comment",[][]byte{
+		[]byte(req.OrderId),
+		[]byte(userId),
+		[]byte(req.Comment),
+	})
+	if err!=nil {
+		return err
+	}
+
+	rsp.Code=utils.RECODE_OK
+	rsp.Msg=utils.RecodeText(rsp.Code)
 
 	return nil
 }

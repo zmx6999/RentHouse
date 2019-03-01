@@ -2,7 +2,7 @@
 // source: proto/example/example.proto
 
 /*
-Package go_micro_srv_Order is a generated protocol buffer package.
+Package go_micro_srv_order is a generated protocol buffer package.
 
 It is generated from these files:
 	proto/example/example.proto
@@ -11,14 +11,14 @@ It has these top-level messages:
 	Message
 	AddRequest
 	AddResponse
-	GetOrdersRequest
-	GetOrdersResponse
+	GetListRequest
+	GetListResponse
 	HandleRequest
 	HandleResponse
 	CommentRequest
 	CommentResponse
 */
-package go_micro_srv_Order
+package go_micro_srv_order
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
@@ -50,7 +50,7 @@ var _ server.Option
 
 type ExampleService interface {
 	Add(ctx context.Context, in *AddRequest, opts ...client.CallOption) (*AddResponse, error)
-	GetOrders(ctx context.Context, in *GetOrdersRequest, opts ...client.CallOption) (*GetOrdersResponse, error)
+	GetList(ctx context.Context, in *GetListRequest, opts ...client.CallOption) (*GetListResponse, error)
 	Handle(ctx context.Context, in *HandleRequest, opts ...client.CallOption) (*HandleResponse, error)
 	Comment(ctx context.Context, in *CommentRequest, opts ...client.CallOption) (*CommentResponse, error)
 }
@@ -65,7 +65,7 @@ func NewExampleService(name string, c client.Client) ExampleService {
 		c = client.NewClient()
 	}
 	if len(name) == 0 {
-		name = "go.micro.srv.Order"
+		name = "go.micro.srv.order"
 	}
 	return &exampleService{
 		c:    c,
@@ -83,9 +83,9 @@ func (c *exampleService) Add(ctx context.Context, in *AddRequest, opts ...client
 	return out, nil
 }
 
-func (c *exampleService) GetOrders(ctx context.Context, in *GetOrdersRequest, opts ...client.CallOption) (*GetOrdersResponse, error) {
-	req := c.c.NewRequest(c.name, "Example.GetOrders", in)
-	out := new(GetOrdersResponse)
+func (c *exampleService) GetList(ctx context.Context, in *GetListRequest, opts ...client.CallOption) (*GetListResponse, error) {
+	req := c.c.NewRequest(c.name, "Example.GetList", in)
+	out := new(GetListResponse)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -117,7 +117,7 @@ func (c *exampleService) Comment(ctx context.Context, in *CommentRequest, opts .
 
 type ExampleHandler interface {
 	Add(context.Context, *AddRequest, *AddResponse) error
-	GetOrders(context.Context, *GetOrdersRequest, *GetOrdersResponse) error
+	GetList(context.Context, *GetListRequest, *GetListResponse) error
 	Handle(context.Context, *HandleRequest, *HandleResponse) error
 	Comment(context.Context, *CommentRequest, *CommentResponse) error
 }
@@ -125,7 +125,7 @@ type ExampleHandler interface {
 func RegisterExampleHandler(s server.Server, hdlr ExampleHandler, opts ...server.HandlerOption) error {
 	type example interface {
 		Add(ctx context.Context, in *AddRequest, out *AddResponse) error
-		GetOrders(ctx context.Context, in *GetOrdersRequest, out *GetOrdersResponse) error
+		GetList(ctx context.Context, in *GetListRequest, out *GetListResponse) error
 		Handle(ctx context.Context, in *HandleRequest, out *HandleResponse) error
 		Comment(ctx context.Context, in *CommentRequest, out *CommentResponse) error
 	}
@@ -144,8 +144,8 @@ func (h *exampleHandler) Add(ctx context.Context, in *AddRequest, out *AddRespon
 	return h.ExampleHandler.Add(ctx, in, out)
 }
 
-func (h *exampleHandler) GetOrders(ctx context.Context, in *GetOrdersRequest, out *GetOrdersResponse) error {
-	return h.ExampleHandler.GetOrders(ctx, in, out)
+func (h *exampleHandler) GetList(ctx context.Context, in *GetListRequest, out *GetListResponse) error {
+	return h.ExampleHandler.GetList(ctx, in, out)
 }
 
 func (h *exampleHandler) Handle(ctx context.Context, in *HandleRequest, out *HandleResponse) error {

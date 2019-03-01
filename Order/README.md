@@ -5,7 +5,7 @@ This is the Order service
 Generated with
 
 ```
-micro new 190120/Order --namespace=go.micro --type=srv
+micro new 190222/order --namespace=go.micro --type=srv
 ```
 
 ## Getting Started
@@ -16,9 +16,9 @@ micro new 190120/Order --namespace=go.micro --type=srv
 
 ## Configuration
 
-- FQDN: go.micro.srv.Order
+- FQDN: go.micro.srv.order
 - Type: srv
-- Alias: Order
+- Alias: order
 
 ## Dependencies
 
@@ -44,7 +44,7 @@ make build
 
 Run the service
 ```
-./Order-srv
+./order-srv
 ```
 
 Build a docker image

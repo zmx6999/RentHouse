@@ -5,7 +5,7 @@ This is the Area service
 Generated with
 
 ```
-micro new 190120/Area --namespace=go.micro --type=srv
+micro new 190222/area --namespace=go.micro --type=srv
 ```
 
 ## Getting Started
@@ -16,9 +16,9 @@ micro new 190120/Area --namespace=go.micro --type=srv
 
 ## Configuration
 
-- FQDN: go.micro.srv.Area
+- FQDN: go.micro.srv.area
 - Type: srv
-- Alias: Area
+- Alias: area
 
 ## Dependencies
 
@@ -44,7 +44,7 @@ make build
 
 Run the service
 ```
-./Area-srv
+./area-srv
 ```
 
 Build a docker image

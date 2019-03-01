@@ -5,7 +5,7 @@ This is the House service
 Generated with
 
 ```
-micro new 190120/House --namespace=go.micro --type=srv
+micro new 190222/house --namespace=go.micro --type=srv
 ```
 
 ## Getting Started
@@ -16,9 +16,9 @@ micro new 190120/House --namespace=go.micro --type=srv
 
 ## Configuration
 
-- FQDN: go.micro.srv.House
+- FQDN: go.micro.srv.house
 - Type: srv
-- Alias: House
+- Alias: house
 
 ## Dependencies
 
@@ -44,7 +44,7 @@ make build
 
 Run the service
 ```
-./House-srv
+./house-srv
 ```
 
 Build a docker image

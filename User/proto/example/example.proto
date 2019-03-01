@@ -1,16 +1,15 @@
 syntax = "proto3";
 
-package go.micro.srv.User;
+package go.micro.srv.user;
 
 service Example {
-	rpc GetCaptcha(GetCaptchaRequest) returns (GetCaptchaResponse) {}
-	rpc GetSmsCaptcha(GetSmsCaptchaRequest) returns (GetSmsCaptchaResponse) {}
+	rpc GenerateId(GenerateIdRequest) returns (GenerateIdResponse) {}
+	rpc Captcha(CaptchaRequest) returns (CaptchaResponse) {}
+	rpc SmsCaptcha(SmsCaptchaRequest) returns (SmsCaptchaResponse) {}
 	rpc Register(RegisterRequest) returns (RegisterResponse) {}
-	rpc Login(LoginRequest) returns (LoginResponse) {}
-	rpc Logout(LogoutRequest) returns (LogoutResponse) {}
-	rpc Info(InfoRequest) returns (InfoResponse) {}
+	rpc GetInfo(GetInfoRequest) returns (GetInfoResponse) {}
 	rpc Avatar(AvatarRequest) returns (AvatarResponse) {}
-	rpc UpdateUserName(UpdateUserNameRequest) returns (UpdateUserNameResponse) {}
+	rpc Rename(RenameRequest) returns (RenameResponse) {}
 	rpc Auth(AuthRequest) returns (AuthResponse) {}
 }
 
@@ -18,105 +17,96 @@ message Message {
 	string say = 1;
 }
 
-message GetCaptchaRequest {
-	string Uuid = 1;
+message GenerateIdRequest {
+
 }
 
-message GetCaptchaResponse {
-	string ErrCode = 1;
-	string ErrMsg = 2;
-	bytes Pix = 3;
-	int64 Stride = 4;
+message GenerateIdResponse {
+	string Code = 1;
+	string Msg = 2;
+	bytes UserId = 3;
+}
+
+message CaptchaRequest {
+	string UserId = 1;
+}
+
+message CaptchaResponse {
 	message Point {
 		int64 X = 1;
 		int64 Y = 2;
 	}
-	Point Min = 5;
-	Point Max = 6;
+	Point Max = 1;
+	Point Min = 2;
+	bytes Pix = 3;
+	int64 Stride = 4;
 }
 
-message GetSmsCaptchaRequest {
-	string Uuid = 1;
+message SmsCaptchaRequest {
+	string UserId = 1;
 	string Mobile = 2;
 	string Captcha = 3;
 }
 
-message GetSmsCaptchaResponse {
-	string ErrCode = 1;
-	string ErrMsg = 2;
+message SmsCaptchaResponse {
+	string Code = 1;
+	string Msg = 2;
 }
 
 message RegisterRequest {
-	string Mobile = 1;
-	string Password = 2;
+	string UserId = 1;
+	string Mobile = 2;
 	string SmsCaptcha = 3;
 }
 
 message RegisterResponse {
-	string ErrCode = 1;
-	string ErrMsg = 2;
-	string SessionId = 3;
+	string Code = 1;
+	string Msg = 2;
+	string UserId = 3;
+	string Mobile = 4;
+	string PrivateKey = 5;
+	string PublicKey = 6;
 }
 
-message LoginRequest {
+message GetInfoRequest {
 	string Mobile = 1;
-	string Password = 2;
 }
 
-message LoginResponse {
-	string ErrCode = 1;
-	string ErrMsg = 2;
-	string SessionId = 3;
-}
-
-message LogoutRequest {
-	string SessionId = 1;
-}
-
-message LogoutResponse {
-	string ErrCode = 1;
-	string ErrMsg = 2;
-}
-
-message InfoRequest {
-	string SessionId = 1;
-}
-
-message InfoResponse {
-	string ErrCode = 1;
-	string ErrMsg = 2;
+message GetInfoResponse {
+	string Code = 1;
+	string Msg = 2;
 	bytes Data = 3;
 }
 
 message AvatarRequest {
-	string SessionId = 1;
+	string Mobile = 1;
 	bytes Data = 2;
-	int64 FileSize = 3;
-	string FileName = 4;
+	string FileName = 3;
+	int64 FileSize = 4;
 }
 
 message AvatarResponse {
-	string ErrCode = 1;
-	string ErrMsg = 2;
+	string Code = 1;
+	string Msg = 2;
 }
 
-message UpdateUserNameRequest {
-	string SessionId = 1;
-	string UserName = 2;
+message RenameRequest {
+	string Mobile = 1;
+	string NewName = 2;
 }
 
-message UpdateUserNameResponse {
-	string ErrCode = 1;
-	string ErrMsg = 2;
+message RenameResponse {
+	string Code = 1;
+	string Msg = 2;
 }
 
 message AuthRequest {
-	string SessionId = 1;
+	string Mobile = 1;
 	string RealName = 2;
 	string IdCard = 3;
 }
 
 message AuthResponse {
-	string ErrCode = 1;
-	string ErrMsg = 2;
+	string Code = 1;
+	string Msg = 2;
 }

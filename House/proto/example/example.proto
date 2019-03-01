@@ -1,14 +1,13 @@
 syntax = "proto3";
 
-package go.micro.srv.House;
+package go.micro.srv.house;
 
 service Example {
 	rpc Add(AddRequest) returns (AddResponse) {}
-	rpc GetHouses(GetHousesRequest) returns (GetHousesResponse) {}
+	rpc GetHouseList(GetHouseListRequest) returns (GetHouseListResponse) {}
+	rpc GetHouseDesc(GetHouseDescRequest) returns (GetHouseDescResponse) {}
 	rpc UploadImage(UploadImageRequest) returns (UploadImageResponse) {}
-	rpc GetHouseDetail(GetHouseDetailRequest) returns (GetHouseDetailResponse) {}
-	rpc GetIndexBanner(GetIndexBannerRequest) returns (GetIndexBannerResponse) {}
-	rpc Search(SearchRequest) returns (SearchResponse) {}
+	rpc GetIndexList(GetIndexListRequest) returns (GetIndexListResponse) {}
 }
 
 message Message {
@@ -16,69 +15,54 @@ message Message {
 }
 
 message AddRequest {
-	string SessionId = 1;
+	string Mobile = 1;
 	bytes Data = 2;
 }
 
 message AddResponse {
-	string ErrCode = 1;
-	string ErrMsg = 2;
+	string Code = 1;
+	string Msg = 2;
 }
 
-message GetHousesRequest {
-	string SessionId = 1;
+message GetHouseListRequest {
+	string Mobile = 1;
 }
 
-message GetHousesResponse {
-	string ErrCode = 1;
-	string ErrMsg = 2;
+message GetHouseListResponse {
+	string Code = 1;
+	string Msg = 2;
+	bytes Data = 3;
+}
+
+message GetHouseDescRequest {
+	string HouseId = 1;
+}
+
+message GetHouseDescResponse {
+	string Code = 1;
+	string Msg = 2;
 	bytes Data = 3;
 }
 
 message UploadImageRequest {
-	string SessionId = 1;
-	int64 HouseId = 2;
+	string Mobile = 1;
+	string HouseId = 2;
 	bytes Data = 3;
-	int64 FileSize = 4;
-	string FileName = 5;
+	string FileName = 4;
+	int64 FileSize = 5;
 }
 
 message UploadImageResponse {
-	string ErrCode = 1;
-	string ErrMsg = 2;
+	string Code = 1;
+	string Msg = 2;
 }
 
-message GetHouseDetailRequest {
-	int64 HouseId = 1;
+message GetIndexListRequest {
+
 }
 
-message GetHouseDetailResponse {
-	string ErrCode = 1;
-	string ErrMsg = 2;
+message GetIndexListResponse {
+	string Code = 1;
+	string Msg = 2;
 	bytes Data = 3;
-}
-
-message GetIndexBannerRequest {
-
-}
-
-message GetIndexBannerResponse {
-	string ErrCode = 1;
-	string ErrMsg = 2;
-	bytes Data = 3;
-}
-
-message SearchRequest {
-	string AreaId = 1;
-	string StartDate = 2;
-	string EndDate = 3;
-	string Page = 4;
-}
-
-message SearchResponse {
-	string ErrCode = 1;
-	string ErrMsg = 2;
-	bytes Data = 3;
-	int64 TotalPage = 4;
-	int64 Page = 5;
 }

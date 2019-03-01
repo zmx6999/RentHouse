@@ -1,10 +1,10 @@
 syntax = "proto3";
 
-package go.micro.srv.Order;
+package go.micro.srv.order;
 
 service Example {
 	rpc Add(AddRequest) returns (AddResponse) {}
-	rpc GetOrders(GetOrdersRequest) returns (GetOrdersResponse) {}
+	rpc GetList(GetListRequest) returns (GetListResponse) {}
 	rpc Handle(HandleRequest) returns (HandleResponse) {}
 	rpc Comment(CommentRequest) returns (CommentResponse) {}
 }
@@ -14,44 +14,44 @@ message Message {
 }
 
 message AddRequest {
-	string SessionId = 1;
+	string Mobile = 1;
 	bytes Data = 2;
 }
 
 message AddResponse {
-	string ErrCode = 1;
-	string ErrMsg = 2;
+	string Code = 1;
+	string Msg = 2;
 }
 
-message GetOrdersRequest {
-	string SessionId = 1;
+message GetListRequest {
+	string Mobile = 1;
 	string Role = 2;
 }
 
-message GetOrdersResponse {
-	string ErrCode = 1;
-	string ErrMsg = 2;
+message GetListResponse {
+	string Code = 1;
+	string Msg = 2;
 	bytes Data = 3;
 }
 
 message HandleRequest {
-	string SessionId = 1;
-	int64 OrderId = 2;
+	string Mobile = 1;
+	string OrderId = 2;
 	string Action = 3;
 }
 
 message HandleResponse {
-	string ErrCode = 1;
-	string ErrMsg = 2;
+	string Code = 1;
+	string Msg = 2;
 }
 
 message CommentRequest {
-	string SessionId = 1;
-	int64 OrderId = 2;
+	string Mobile = 1;
+	string OrderId = 2;
 	string Comment = 3;
 }
 
 message CommentResponse {
-	string ErrCode = 1;
-	string ErrMsg = 2;
+	string Code = 1;
+	string Msg = 2;
 }

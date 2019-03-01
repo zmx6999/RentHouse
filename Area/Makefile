@@ -9,10 +9,10 @@ proto:
 
 build: proto
 
-	go build -o Area-srv main.go plugin.go
+	go build -o area-srv main.go plugin.go
 
 test:
 	go test -v ./... -cover
 
 docker:
-	docker build . -t Area-srv:latest
+	docker build . -t area-srv:latest

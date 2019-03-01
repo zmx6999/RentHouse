@@ -9,10 +9,10 @@ proto:
 
 build: proto
 
-	go build -o Order-srv main.go plugin.go
+	go build -o order-srv main.go plugin.go
 
 test:
 	go test -v ./... -cover
 
 docker:
-	docker build . -t Order-srv:latest
+	docker build . -t order-srv:latest

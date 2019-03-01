@@ -9,10 +9,10 @@ proto:
 
 build: proto
 
-	go build -o User-srv main.go plugin.go
+	go build -o user-srv main.go plugin.go
 
 test:
 	go test -v ./... -cover
 
 docker:
-	docker build . -t User-srv:latest
+	docker build . -t user-srv:latest

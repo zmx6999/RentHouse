@@ -1,0 +1,53 @@
+{
+  "domain": "house.com",
+  "zookeepers": [
+    {
+      "host_name": "zookeeper1",
+      "ports": [
+        "2181",
+        "2888",
+        "3888"
+      ],
+      "zoo_my_id": "2",
+      "zoo_servers": "server.1=zookeeper0:2888:3888 server.2=zookeeper1:2888:3888 server.3=zookeeper2:2888:3888"
+    }
+  ],
+  "kafkas": [
+    {
+      "host_name": "kafka1",
+      "broker_id": "1",
+      "zookeepers": [
+        "zookeeper0:2181",
+        "zookeeper1:2181",
+        "zookeeper2:2181"
+      ]
+    }
+  ],
+  "orderers": [
+    {
+      "orderer_name": "orderer1",
+      "kafka_brokers": [
+        "kafka0",
+        "kafka1",
+        "kafka2",
+        "kafka3"
+      ],
+      "ports": [
+        "8050"
+      ]
+    }
+  ],
+  "hosts": [
+    "zookeeper0:139.180.146.33",
+    "kafka0:139.180.146.33",
+    "orderer0.house.com:139.180.146.33",
+    "zookeeper1:139.180.138.179",
+    "kafka1:139.180.138.179",
+    "orderer1.house.com:139.180.138.179",
+    "zookeeper2:45.77.250.9",
+    "kafka2:45.77.250.9",
+    "peer0.orgrenting.house.com:45.77.250.9",
+    "kafka3:149.28.157.54",
+    "peer1.orgrenting.house.com:149.28.157.54"
+  ]
+}

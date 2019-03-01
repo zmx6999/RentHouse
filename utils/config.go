@@ -1,48 +1,52 @@
 package utils
 
 import (
-	"github.com/astaxie/beego/config"
 	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/config"
 )
 
 var (
 	APPPort string
 
-	MySQLHost string
-	MySQLPort string
-	MySQLDBName string
-	MySQLUserName string
-	MySQLPassword string
+	FDFSHost string
+	FDFSPort string
+	FDFSConfig string
+
+	FabricSDKConfig string
+	ChannelId string
+	User string
+	ChaincodeId string
 
 	RedisHost string
 	RedisPort string
 
-	FDFSHost string
-	FDFSPort string
-
-	TimeZone string
+	MessageAppId string
+	MessageAppKey string
+	MessageProject string
 )
 
 func init()  {
-	cfg,err:=config.NewConfig("ini","/root/go/src/190120/conf/app.conf")
+	conf,err:=config.NewConfig("ini","/root/go/src/190222/conf/app.conf")
 	if err!=nil {
 		beego.Error(err)
 		return
 	}
 
-	APPPort=cfg.String("APPPort")
+	APPPort=conf.String("APP_PORT")
 
-	MySQLHost=cfg.String("MySQLHost")
-	MySQLPort=cfg.String("MySQLPort")
-	MySQLDBName=cfg.String("MySQLDBName")
-	MySQLUserName=cfg.String("MySQLUserName")
-	MySQLPassword=cfg.String("MySQLPassword")
+	FDFSHost=conf.String("FDFS_HOST")
+	FDFSPort=conf.String("FDFS_PORT")
+	FDFSConfig=conf.String("FDFS_CONFIG")
 
-	RedisHost=cfg.String("RedisHost")
-	RedisPort=cfg.String("RedisPort")
+	FabricSDKConfig=conf.String("FABRIC_SDK_CONFIG")
+	ChannelId=conf.String("CHANNEL_ID")
+	User=conf.String("USER")
+	ChaincodeId=conf.String("CHAINCODE_ID")
 
-	FDFSHost=cfg.String("FDFSHost")
-	FDFSPort=cfg.String("FDFSPort")
+	RedisHost=conf.String("REDIS_HOST")
+	RedisPort=conf.String("REDIS_PORT")
 
-	TimeZone=cfg.String("TimeZone")
+	MessageAppId=conf.String("MESSAGE_APP_ID")
+	MessageAppKey=conf.String("MESSAGE_APP_KEY")
+	MessageProject=conf.String("MESSAGE_PROJECT")
 }

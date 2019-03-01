@@ -2,33 +2,31 @@
 // source: proto/example/example.proto
 
 /*
-Package go_micro_srv_User is a generated protocol buffer package.
+Package go_micro_srv_user is a generated protocol buffer package.
 
 It is generated from these files:
 	proto/example/example.proto
 
 It has these top-level messages:
 	Message
-	GetCaptchaRequest
-	GetCaptchaResponse
-	GetSmsCaptchaRequest
-	GetSmsCaptchaResponse
+	GenerateIdRequest
+	GenerateIdResponse
+	CaptchaRequest
+	CaptchaResponse
+	SmsCaptchaRequest
+	SmsCaptchaResponse
 	RegisterRequest
 	RegisterResponse
-	LoginRequest
-	LoginResponse
-	LogoutRequest
-	LogoutResponse
-	InfoRequest
-	InfoResponse
+	GetInfoRequest
+	GetInfoResponse
 	AvatarRequest
 	AvatarResponse
-	UpdateUserNameRequest
-	UpdateUserNameResponse
+	RenameRequest
+	RenameResponse
 	AuthRequest
 	AuthResponse
 */
-package go_micro_srv_User
+package go_micro_srv_user
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
@@ -59,14 +57,13 @@ var _ server.Option
 // Client API for Example service
 
 type ExampleService interface {
-	GetCaptcha(ctx context.Context, in *GetCaptchaRequest, opts ...client.CallOption) (*GetCaptchaResponse, error)
-	GetSmsCaptcha(ctx context.Context, in *GetSmsCaptchaRequest, opts ...client.CallOption) (*GetSmsCaptchaResponse, error)
+	GenerateId(ctx context.Context, in *GenerateIdRequest, opts ...client.CallOption) (*GenerateIdResponse, error)
+	Captcha(ctx context.Context, in *CaptchaRequest, opts ...client.CallOption) (*CaptchaResponse, error)
+	SmsCaptcha(ctx context.Context, in *SmsCaptchaRequest, opts ...client.CallOption) (*SmsCaptchaResponse, error)
 	Register(ctx context.Context, in *RegisterRequest, opts ...client.CallOption) (*RegisterResponse, error)
-	Login(ctx context.Context, in *LoginRequest, opts ...client.CallOption) (*LoginResponse, error)
-	Logout(ctx context.Context, in *LogoutRequest, opts ...client.CallOption) (*LogoutResponse, error)
-	Info(ctx context.Context, in *InfoRequest, opts ...client.CallOption) (*InfoResponse, error)
+	GetInfo(ctx context.Context, in *GetInfoRequest, opts ...client.CallOption) (*GetInfoResponse, error)
 	Avatar(ctx context.Context, in *AvatarRequest, opts ...client.CallOption) (*AvatarResponse, error)
-	UpdateUserName(ctx context.Context, in *UpdateUserNameRequest, opts ...client.CallOption) (*UpdateUserNameResponse, error)
+	Rename(ctx context.Context, in *RenameRequest, opts ...client.CallOption) (*RenameResponse, error)
 	Auth(ctx context.Context, in *AuthRequest, opts ...client.CallOption) (*AuthResponse, error)
 }
 
@@ -80,7 +77,7 @@ func NewExampleService(name string, c client.Client) ExampleService {
 		c = client.NewClient()
 	}
 	if len(name) == 0 {
-		name = "go.micro.srv.User"
+		name = "go.micro.srv.user"
 	}
 	return &exampleService{
 		c:    c,
@@ -88,9 +85,9 @@ func NewExampleService(name string, c client.Client) ExampleService {
 	}
 }
 
-func (c *exampleService) GetCaptcha(ctx context.Context, in *GetCaptchaRequest, opts ...client.CallOption) (*GetCaptchaResponse, error) {
-	req := c.c.NewRequest(c.name, "Example.GetCaptcha", in)
-	out := new(GetCaptchaResponse)
+func (c *exampleService) GenerateId(ctx context.Context, in *GenerateIdRequest, opts ...client.CallOption) (*GenerateIdResponse, error) {
+	req := c.c.NewRequest(c.name, "Example.GenerateId", in)
+	out := new(GenerateIdResponse)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -98,9 +95,19 @@ func (c *exampleService) GetCaptcha(ctx context.Context, in *GetCaptchaRequest, 
 	return out, nil
 }
 
-func (c *exampleService) GetSmsCaptcha(ctx context.Context, in *GetSmsCaptchaRequest, opts ...client.CallOption) (*GetSmsCaptchaResponse, error) {
-	req := c.c.NewRequest(c.name, "Example.GetSmsCaptcha", in)
-	out := new(GetSmsCaptchaResponse)
+func (c *exampleService) Captcha(ctx context.Context, in *CaptchaRequest, opts ...client.CallOption) (*CaptchaResponse, error) {
+	req := c.c.NewRequest(c.name, "Example.Captcha", in)
+	out := new(CaptchaResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *exampleService) SmsCaptcha(ctx context.Context, in *SmsCaptchaRequest, opts ...client.CallOption) (*SmsCaptchaResponse, error) {
+	req := c.c.NewRequest(c.name, "Example.SmsCaptcha", in)
+	out := new(SmsCaptchaResponse)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -118,29 +125,9 @@ func (c *exampleService) Register(ctx context.Context, in *RegisterRequest, opts
 	return out, nil
 }
 
-func (c *exampleService) Login(ctx context.Context, in *LoginRequest, opts ...client.CallOption) (*LoginResponse, error) {
-	req := c.c.NewRequest(c.name, "Example.Login", in)
-	out := new(LoginResponse)
-	err := c.c.Call(ctx, req, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *exampleService) Logout(ctx context.Context, in *LogoutRequest, opts ...client.CallOption) (*LogoutResponse, error) {
-	req := c.c.NewRequest(c.name, "Example.Logout", in)
-	out := new(LogoutResponse)
-	err := c.c.Call(ctx, req, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *exampleService) Info(ctx context.Context, in *InfoRequest, opts ...client.CallOption) (*InfoResponse, error) {
-	req := c.c.NewRequest(c.name, "Example.Info", in)
-	out := new(InfoResponse)
+func (c *exampleService) GetInfo(ctx context.Context, in *GetInfoRequest, opts ...client.CallOption) (*GetInfoResponse, error) {
+	req := c.c.NewRequest(c.name, "Example.GetInfo", in)
+	out := new(GetInfoResponse)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -158,9 +145,9 @@ func (c *exampleService) Avatar(ctx context.Context, in *AvatarRequest, opts ...
 	return out, nil
 }
 
-func (c *exampleService) UpdateUserName(ctx context.Context, in *UpdateUserNameRequest, opts ...client.CallOption) (*UpdateUserNameResponse, error) {
-	req := c.c.NewRequest(c.name, "Example.UpdateUserName", in)
-	out := new(UpdateUserNameResponse)
+func (c *exampleService) Rename(ctx context.Context, in *RenameRequest, opts ...client.CallOption) (*RenameResponse, error) {
+	req := c.c.NewRequest(c.name, "Example.Rename", in)
+	out := new(RenameResponse)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -181,27 +168,25 @@ func (c *exampleService) Auth(ctx context.Context, in *AuthRequest, opts ...clie
 // Server API for Example service
 
 type ExampleHandler interface {
-	GetCaptcha(context.Context, *GetCaptchaRequest, *GetCaptchaResponse) error
-	GetSmsCaptcha(context.Context, *GetSmsCaptchaRequest, *GetSmsCaptchaResponse) error
+	GenerateId(context.Context, *GenerateIdRequest, *GenerateIdResponse) error
+	Captcha(context.Context, *CaptchaRequest, *CaptchaResponse) error
+	SmsCaptcha(context.Context, *SmsCaptchaRequest, *SmsCaptchaResponse) error
 	Register(context.Context, *RegisterRequest, *RegisterResponse) error
-	Login(context.Context, *LoginRequest, *LoginResponse) error
-	Logout(context.Context, *LogoutRequest, *LogoutResponse) error
-	Info(context.Context, *InfoRequest, *InfoResponse) error
+	GetInfo(context.Context, *GetInfoRequest, *GetInfoResponse) error
 	Avatar(context.Context, *AvatarRequest, *AvatarResponse) error
-	UpdateUserName(context.Context, *UpdateUserNameRequest, *UpdateUserNameResponse) error
+	Rename(context.Context, *RenameRequest, *RenameResponse) error
 	Auth(context.Context, *AuthRequest, *AuthResponse) error
 }
 
 func RegisterExampleHandler(s server.Server, hdlr ExampleHandler, opts ...server.HandlerOption) error {
 	type example interface {
-		GetCaptcha(ctx context.Context, in *GetCaptchaRequest, out *GetCaptchaResponse) error
-		GetSmsCaptcha(ctx context.Context, in *GetSmsCaptchaRequest, out *GetSmsCaptchaResponse) error
+		GenerateId(ctx context.Context, in *GenerateIdRequest, out *GenerateIdResponse) error
+		Captcha(ctx context.Context, in *CaptchaRequest, out *CaptchaResponse) error
+		SmsCaptcha(ctx context.Context, in *SmsCaptchaRequest, out *SmsCaptchaResponse) error
 		Register(ctx context.Context, in *RegisterRequest, out *RegisterResponse) error
-		Login(ctx context.Context, in *LoginRequest, out *LoginResponse) error
-		Logout(ctx context.Context, in *LogoutRequest, out *LogoutResponse) error
-		Info(ctx context.Context, in *InfoRequest, out *InfoResponse) error
+		GetInfo(ctx context.Context, in *GetInfoRequest, out *GetInfoResponse) error
 		Avatar(ctx context.Context, in *AvatarRequest, out *AvatarResponse) error
-		UpdateUserName(ctx context.Context, in *UpdateUserNameRequest, out *UpdateUserNameResponse) error
+		Rename(ctx context.Context, in *RenameRequest, out *RenameResponse) error
 		Auth(ctx context.Context, in *AuthRequest, out *AuthResponse) error
 	}
 	type Example struct {
@@ -215,36 +200,32 @@ type exampleHandler struct {
 	ExampleHandler
 }
 
-func (h *exampleHandler) GetCaptcha(ctx context.Context, in *GetCaptchaRequest, out *GetCaptchaResponse) error {
-	return h.ExampleHandler.GetCaptcha(ctx, in, out)
+func (h *exampleHandler) GenerateId(ctx context.Context, in *GenerateIdRequest, out *GenerateIdResponse) error {
+	return h.ExampleHandler.GenerateId(ctx, in, out)
 }
 
-func (h *exampleHandler) GetSmsCaptcha(ctx context.Context, in *GetSmsCaptchaRequest, out *GetSmsCaptchaResponse) error {
-	return h.ExampleHandler.GetSmsCaptcha(ctx, in, out)
+func (h *exampleHandler) Captcha(ctx context.Context, in *CaptchaRequest, out *CaptchaResponse) error {
+	return h.ExampleHandler.Captcha(ctx, in, out)
+}
+
+func (h *exampleHandler) SmsCaptcha(ctx context.Context, in *SmsCaptchaRequest, out *SmsCaptchaResponse) error {
+	return h.ExampleHandler.SmsCaptcha(ctx, in, out)
 }
 
 func (h *exampleHandler) Register(ctx context.Context, in *RegisterRequest, out *RegisterResponse) error {
 	return h.ExampleHandler.Register(ctx, in, out)
 }
 
-func (h *exampleHandler) Login(ctx context.Context, in *LoginRequest, out *LoginResponse) error {
-	return h.ExampleHandler.Login(ctx, in, out)
-}
-
-func (h *exampleHandler) Logout(ctx context.Context, in *LogoutRequest, out *LogoutResponse) error {
-	return h.ExampleHandler.Logout(ctx, in, out)
-}
-
-func (h *exampleHandler) Info(ctx context.Context, in *InfoRequest, out *InfoResponse) error {
-	return h.ExampleHandler.Info(ctx, in, out)
+func (h *exampleHandler) GetInfo(ctx context.Context, in *GetInfoRequest, out *GetInfoResponse) error {
+	return h.ExampleHandler.GetInfo(ctx, in, out)
 }
 
 func (h *exampleHandler) Avatar(ctx context.Context, in *AvatarRequest, out *AvatarResponse) error {
 	return h.ExampleHandler.Avatar(ctx, in, out)
 }
 
-func (h *exampleHandler) UpdateUserName(ctx context.Context, in *UpdateUserNameRequest, out *UpdateUserNameResponse) error {
-	return h.ExampleHandler.UpdateUserName(ctx, in, out)
+func (h *exampleHandler) Rename(ctx context.Context, in *RenameRequest, out *RenameResponse) error {
+	return h.ExampleHandler.Rename(ctx, in, out)
 }
 
 func (h *exampleHandler) Auth(ctx context.Context, in *AuthRequest, out *AuthResponse) error {
