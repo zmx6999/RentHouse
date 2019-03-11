@@ -5,7 +5,7 @@ This is the Order service
 Generated with
 
 ```
-micro new 190222/order --namespace=go.micro --type=srv
+micro new 190303/order --namespace=go.micro --type=srv
 ```
 
 ## Getting Started
@@ -22,7 +22,9 @@ micro new 190222/order --namespace=go.micro --type=srv
 
 ## Dependencies
 
-Micro services depend on service discovery. The default is consul.
+Micro services depend on service discovery. The default is multicast DNS, a zeroconf system.
+
+In the event you need a resilient multi-host setup we recommend consul.
 
 ```
 # install consul

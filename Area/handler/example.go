@@ -2,49 +2,42 @@ package handler
 
 import (
 	"context"
-	example "190222/area/proto/example"
-	"190222/models"
-	"190222/utils"
-		"github.com/garyburd/redigo/redis"
+
+		example "190303/area/proto/example"
+	"github.com/garyburd/redigo/redis"
+	"190303/utils"
+	"github.com/astaxie/beego"
+	"190303/models"
 )
 
 type Example struct{}
 
-func (e *Example) GetArea(ctx context.Context, req *example.GetAreaRequest, rsp *example.GetAreaResponse) error {
+// Call is a single request handler called via client.Call or the generated client code
+func (e *Example) GetAreaList(ctx context.Context, req *example.GetAreaListRequest, rsp *example.GetAreaListResponse) error {
+	aKey:="area_list"
 	conn,err:=redis.Dial("tcp",utils.RedisHost+":"+utils.RedisPort)
-	if err!=nil {
-		return err
+	if err==nil {
+		data,_:=redis.Bytes(conn.Do("get",aKey))
+		if data!=nil {
+			beego.Info(data)
+			rsp.Data=data
+			return nil
+		}
 	}
 	defer conn.Close()
 
-	data,err:=redis.Bytes(conn.Do("get","area_list"))
-	if data!=nil {
-		rsp.Data=data
-		rsp.Code=utils.RECODE_OK
-		rsp.Msg=utils.RecodeText(rsp.Code)
-
-		return nil
-	}
-
-	ccs,err:=models.Initialize(utils.ChannelId,utils.User,utils.ChaincodeId,utils.FabricSDKConfig)
-	if err!=nil {
-		return err
-	}
-	defer ccs.Close()
-
-	data,err=ccs.ChaincodeQuery("getAreaList",[][]byte{})
+	ccs,err:=models.Initialize(utils.ChannelId, utils.UserName, utils.OrgName, utils.ChaincodeId, utils.ConfigFile)
 	if err!=nil {
 		return err
 	}
 
-	_,err=conn.Do("set","area_list",data,"EX",3600)
+	data,err:=ccs.ChaincodeQuery(utils.ChaincodeId,"getAreaList",[][]byte{})
 	if err!=nil {
 		return err
 	}
-
 	rsp.Data=data
-	rsp.Code=utils.RECODE_OK
-	rsp.Msg=utils.RecodeText(rsp.Code)
+
+	conn.Do("set",aKey,data,"EX",3600)
 
 	return nil
 }

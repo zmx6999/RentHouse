@@ -3,10 +3,11 @@ package handler
 import (
 	"context"
 
-		example "190222/order/proto/example"
+		example "190303/order/proto/example"
 	"encoding/json"
-	"190222/utils"
-	"190222/models"
+	"190303/utils"
+	"190303/models"
+	"github.com/garyburd/redigo/redis"
 )
 
 type Example struct{}
@@ -19,19 +20,13 @@ func (e *Example) Add(ctx context.Context, req *example.AddRequest, rsp *example
 		return err
 	}
 
-	ccs,err:=models.Initialize(utils.ChannelId,utils.User,utils.ChaincodeId,utils.FabricSDKConfig)
-	if err!=nil {
-		return err
-	}
-	defer ccs.Close()
-
-	userId,err:=ccs.GetUserId(data["mobile"].(string))
+	ccs,err:=models.Initialize(utils.ChannelId, utils.UserName, utils.OrgName, utils.ChaincodeId, utils.ConfigFile)
 	if err!=nil {
 		return err
 	}
 
-	_,err=ccs.ChaincodeUpdate("addOrder",[][]byte{
-		[]byte(userId),
+	_,err=ccs.ChaincodeUpdate(utils.ChaincodeId,"addOrder",[][]byte{
+		[]byte(data["mobile"].(string)),
 		[]byte(data["house_id"].(string)),
 		[]byte(data["start_date"].(string)),
 		[]byte(data["end_date"].(string)),
@@ -40,86 +35,64 @@ func (e *Example) Add(ctx context.Context, req *example.AddRequest, rsp *example
 		return err
 	}
 
-	rsp.Code=utils.RECODE_OK
-	rsp.Msg=utils.RecodeText(rsp.Code)
-
 	return nil
 }
 
 func (e *Example) GetList(ctx context.Context, req *example.GetListRequest, rsp *example.GetListResponse) error {
-	ccs,err:=models.Initialize(utils.ChannelId,utils.User,utils.ChaincodeId,utils.FabricSDKConfig)
-	if err!=nil {
-		return err
-	}
-	defer ccs.Close()
-
-	userId,err:=ccs.GetUserId(req.Mobile)
+	ccs,err:=models.Initialize(utils.ChannelId, utils.UserName, utils.OrgName, utils.ChaincodeId, utils.ConfigFile)
 	if err!=nil {
 		return err
 	}
 
-	data,err:=ccs.ChaincodeQuery("getOrderList",[][]byte{[]byte(userId),[]byte(req.Role)})
+	data,err:=ccs.ChaincodeQuery(utils.ChaincodeId,"getOrderList",[][]byte{[]byte(req.Mobile),[]byte(req.Role)})
 	if err!=nil {
 		return err
 	}
-
 	rsp.Data=data
-	rsp.Code=utils.RECODE_OK
-	rsp.Msg=utils.RecodeText(rsp.Code)
 
 	return nil
 }
 
 func (e *Example) Handle(ctx context.Context, req *example.HandleRequest, rsp *example.HandleResponse) error {
-	ccs,err:=models.Initialize(utils.ChannelId,utils.User,utils.ChaincodeId,utils.FabricSDKConfig)
-	if err!=nil {
-		return err
-	}
-	defer ccs.Close()
-
-	userId,err:=ccs.GetUserId(req.Mobile)
+	ccs,err:=models.Initialize(utils.ChannelId, utils.UserName, utils.OrgName, utils.ChaincodeId, utils.ConfigFile)
 	if err!=nil {
 		return err
 	}
 
-	_,err=ccs.ChaincodeUpdate("handleOrder",[][]byte{
-		[]byte(req.OrderId),
-		[]byte(userId),
-		[]byte(req.Action),
-	})
+	_,err=ccs.ChaincodeUpdate(utils.ChaincodeId,"handleOrder",[][]byte{[]byte(req.Mobile),[]byte(req.OrderId),[]byte(req.Action)})
 	if err!=nil {
 		return err
 	}
-
-	rsp.Code=utils.RECODE_OK
-	rsp.Msg=utils.RecodeText(rsp.Code)
 
 	return nil
 }
 
 func (e *Example) Comment(ctx context.Context, req *example.CommentRequest, rsp *example.CommentResponse) error {
-	ccs,err:=models.Initialize(utils.ChannelId,utils.User,utils.ChaincodeId,utils.FabricSDKConfig)
-	if err!=nil {
-		return err
-	}
-	defer ccs.Close()
-
-	userId,err:=ccs.GetUserId(req.Mobile)
+	ccs,err:=models.Initialize(utils.ChannelId, utils.UserName, utils.OrgName, utils.ChaincodeId, utils.ConfigFile)
 	if err!=nil {
 		return err
 	}
 
-	_,err=ccs.ChaincodeUpdate("comment",[][]byte{
-		[]byte(req.OrderId),
-		[]byte(userId),
-		[]byte(req.Comment),
-	})
+	_,err=ccs.ChaincodeUpdate(utils.ChaincodeId,"comment",[][]byte{[]byte(req.Mobile),[]byte(req.OrderId),[]byte(req.Comment)})
 	if err!=nil {
 		return err
 	}
 
-	rsp.Code=utils.RECODE_OK
-	rsp.Msg=utils.RecodeText(rsp.Code)
+	conn,err:=redis.Dial("tcp",utils.RedisHost+":"+utils.RedisPort)
+	if err!=nil {
+		return err
+	}
+
+	houseId,err:=ccs.ChaincodeQuery(utils.ChaincodeId,"getOrderHouseId",[][]byte{[]byte(req.OrderId)})
+	if err!=nil {
+		return err
+	}
+
+	hKey:="house_"+string(houseId)
+	_,err=conn.Do("del",hKey)
+	if err!=nil {
+		return err
+	}
 
 	return nil
 }

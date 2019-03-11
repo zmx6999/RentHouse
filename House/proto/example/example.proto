@@ -4,10 +4,11 @@ package go.micro.srv.house;
 
 service Example {
 	rpc Add(AddRequest) returns (AddResponse) {}
-	rpc GetHouseList(GetHouseListRequest) returns (GetHouseListResponse) {}
-	rpc GetHouseDesc(GetHouseDescRequest) returns (GetHouseDescResponse) {}
 	rpc UploadImage(UploadImageRequest) returns (UploadImageResponse) {}
+	rpc GetLandlordList(GetLandlordListRequest) returns (GetLandlordListResponse) {}
+	rpc GetDesc(GetDescRequest) returns (GetDescResponse) {}
 	rpc GetIndexList(GetIndexListRequest) returns (GetIndexListResponse) {}
+	rpc Search(SearchRequest) returns (SearchResponse) {}
 }
 
 message Message {
@@ -15,46 +16,39 @@ message Message {
 }
 
 message AddRequest {
-	string Mobile = 1;
-	bytes Data = 2;
+	bytes Data = 1;
 }
 
 message AddResponse {
-	string Code = 1;
-	string Msg = 2;
-}
 
-message GetHouseListRequest {
-	string Mobile = 1;
-}
-
-message GetHouseListResponse {
-	string Code = 1;
-	string Msg = 2;
-	bytes Data = 3;
-}
-
-message GetHouseDescRequest {
-	string HouseId = 1;
-}
-
-message GetHouseDescResponse {
-	string Code = 1;
-	string Msg = 2;
-	bytes Data = 3;
 }
 
 message UploadImageRequest {
 	string Mobile = 1;
 	string HouseId = 2;
 	bytes Data = 3;
-	string FileName = 4;
-	int64 FileSize = 5;
+	int64 FileSize = 4;
+	string FileName = 5;
 }
 
 message UploadImageResponse {
-	string Code = 1;
-	string Msg = 2;
+
+}
+
+message GetLandlordListRequest {
+	string Mobile = 1;
+}
+
+message GetLandlordListResponse {
+	bytes Data = 1;
+}
+
+message GetDescRequest {
+	string HouseId = 1;
+}
+
+message GetDescResponse {
+	bytes Data = 1;
 }
 
 message GetIndexListRequest {
@@ -62,7 +56,16 @@ message GetIndexListRequest {
 }
 
 message GetIndexListResponse {
-	string Code = 1;
-	string Msg = 2;
-	bytes Data = 3;
+	bytes Data = 1;
+}
+
+message SearchRequest {
+	string AreaId = 1;
+	string Start = 2;
+	string End = 3;
+	string Page = 4;
+}
+
+message SearchResponse {
+	bytes Data = 1;
 }

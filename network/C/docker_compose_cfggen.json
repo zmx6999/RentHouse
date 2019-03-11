@@ -41,7 +41,13 @@
         "7051",
         "7052",
         "7053"
-      ]
+      ],
+      "couchdb": {
+        "couchdb_name": "couchdb0",
+        "ports": [
+          "5984"
+        ]
+      }
     }
   ],
   "clis": [
@@ -55,16 +61,16 @@
     }
   ],
   "hosts": [
-    "zookeeper0:139.180.146.33",
-    "kafka0:139.180.146.33",
-    "orderer0.house.com:139.180.146.33",
-    "zookeeper1:139.180.138.179",
-    "kafka1:139.180.138.179",
-    "orderer1.house.com:139.180.138.179",
-    "zookeeper2:45.77.250.9",
-    "kafka2:45.77.250.9",
-    "peer0.orgrenting.house.com:45.77.250.9",
-    "kafka3:149.28.157.54",
-    "peer1.orgrenting.house.com:149.28.157.54"
+    "zookeeper0:149.28.212.97",
+    "kafka0:149.28.212.97",
+    "orderer0.house.com:149.28.212.97",
+    "zookeeper1:149.28.196.34",
+    "kafka1:149.28.196.34",
+    "orderer1.house.com:149.28.196.34",
+    "zookeeper2:45.63.94.102",
+    "kafka2:45.63.94.102",
+    "peer0.orgrenting.house.com:45.63.94.102",
+    "kafka3:104.156.230.68",
+    "peer1.orgrenting.house.com:104.156.230.68"
   ]
 }

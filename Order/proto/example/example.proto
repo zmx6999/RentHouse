@@ -14,13 +14,11 @@ message Message {
 }
 
 message AddRequest {
-	string Mobile = 1;
-	bytes Data = 2;
+	bytes Data = 1;
 }
 
 message AddResponse {
-	string Code = 1;
-	string Msg = 2;
+
 }
 
 message GetListRequest {
@@ -29,9 +27,7 @@ message GetListRequest {
 }
 
 message GetListResponse {
-	string Code = 1;
-	string Msg = 2;
-	bytes Data = 3;
+	bytes Data = 1;
 }
 
 message HandleRequest {
@@ -41,8 +37,7 @@ message HandleRequest {
 }
 
 message HandleResponse {
-	string Code = 1;
-	string Msg = 2;
+
 }
 
 message CommentRequest {
@@ -52,6 +47,5 @@ message CommentRequest {
 }
 
 message CommentResponse {
-	string Code = 1;
-	string Msg = 2;
+
 }

@@ -11,14 +11,16 @@ It has these top-level messages:
 	Message
 	AddRequest
 	AddResponse
-	GetHouseListRequest
-	GetHouseListResponse
-	GetHouseDescRequest
-	GetHouseDescResponse
 	UploadImageRequest
 	UploadImageResponse
+	GetLandlordListRequest
+	GetLandlordListResponse
+	GetDescRequest
+	GetDescResponse
 	GetIndexListRequest
 	GetIndexListResponse
+	SearchRequest
+	SearchResponse
 */
 package go_micro_srv_house
 
@@ -52,10 +54,11 @@ var _ server.Option
 
 type ExampleService interface {
 	Add(ctx context.Context, in *AddRequest, opts ...client.CallOption) (*AddResponse, error)
-	GetHouseList(ctx context.Context, in *GetHouseListRequest, opts ...client.CallOption) (*GetHouseListResponse, error)
-	GetHouseDesc(ctx context.Context, in *GetHouseDescRequest, opts ...client.CallOption) (*GetHouseDescResponse, error)
 	UploadImage(ctx context.Context, in *UploadImageRequest, opts ...client.CallOption) (*UploadImageResponse, error)
+	GetLandlordList(ctx context.Context, in *GetLandlordListRequest, opts ...client.CallOption) (*GetLandlordListResponse, error)
+	GetDesc(ctx context.Context, in *GetDescRequest, opts ...client.CallOption) (*GetDescResponse, error)
 	GetIndexList(ctx context.Context, in *GetIndexListRequest, opts ...client.CallOption) (*GetIndexListResponse, error)
+	Search(ctx context.Context, in *SearchRequest, opts ...client.CallOption) (*SearchResponse, error)
 }
 
 type exampleService struct {
@@ -86,29 +89,29 @@ func (c *exampleService) Add(ctx context.Context, in *AddRequest, opts ...client
 	return out, nil
 }
 
-func (c *exampleService) GetHouseList(ctx context.Context, in *GetHouseListRequest, opts ...client.CallOption) (*GetHouseListResponse, error) {
-	req := c.c.NewRequest(c.name, "Example.GetHouseList", in)
-	out := new(GetHouseListResponse)
-	err := c.c.Call(ctx, req, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *exampleService) GetHouseDesc(ctx context.Context, in *GetHouseDescRequest, opts ...client.CallOption) (*GetHouseDescResponse, error) {
-	req := c.c.NewRequest(c.name, "Example.GetHouseDesc", in)
-	out := new(GetHouseDescResponse)
-	err := c.c.Call(ctx, req, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *exampleService) UploadImage(ctx context.Context, in *UploadImageRequest, opts ...client.CallOption) (*UploadImageResponse, error) {
 	req := c.c.NewRequest(c.name, "Example.UploadImage", in)
 	out := new(UploadImageResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *exampleService) GetLandlordList(ctx context.Context, in *GetLandlordListRequest, opts ...client.CallOption) (*GetLandlordListResponse, error) {
+	req := c.c.NewRequest(c.name, "Example.GetLandlordList", in)
+	out := new(GetLandlordListResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *exampleService) GetDesc(ctx context.Context, in *GetDescRequest, opts ...client.CallOption) (*GetDescResponse, error) {
+	req := c.c.NewRequest(c.name, "Example.GetDesc", in)
+	out := new(GetDescResponse)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -126,23 +129,35 @@ func (c *exampleService) GetIndexList(ctx context.Context, in *GetIndexListReque
 	return out, nil
 }
 
+func (c *exampleService) Search(ctx context.Context, in *SearchRequest, opts ...client.CallOption) (*SearchResponse, error) {
+	req := c.c.NewRequest(c.name, "Example.Search", in)
+	out := new(SearchResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Example service
 
 type ExampleHandler interface {
 	Add(context.Context, *AddRequest, *AddResponse) error
-	GetHouseList(context.Context, *GetHouseListRequest, *GetHouseListResponse) error
-	GetHouseDesc(context.Context, *GetHouseDescRequest, *GetHouseDescResponse) error
 	UploadImage(context.Context, *UploadImageRequest, *UploadImageResponse) error
+	GetLandlordList(context.Context, *GetLandlordListRequest, *GetLandlordListResponse) error
+	GetDesc(context.Context, *GetDescRequest, *GetDescResponse) error
 	GetIndexList(context.Context, *GetIndexListRequest, *GetIndexListResponse) error
+	Search(context.Context, *SearchRequest, *SearchResponse) error
 }
 
 func RegisterExampleHandler(s server.Server, hdlr ExampleHandler, opts ...server.HandlerOption) error {
 	type example interface {
 		Add(ctx context.Context, in *AddRequest, out *AddResponse) error
-		GetHouseList(ctx context.Context, in *GetHouseListRequest, out *GetHouseListResponse) error
-		GetHouseDesc(ctx context.Context, in *GetHouseDescRequest, out *GetHouseDescResponse) error
 		UploadImage(ctx context.Context, in *UploadImageRequest, out *UploadImageResponse) error
+		GetLandlordList(ctx context.Context, in *GetLandlordListRequest, out *GetLandlordListResponse) error
+		GetDesc(ctx context.Context, in *GetDescRequest, out *GetDescResponse) error
 		GetIndexList(ctx context.Context, in *GetIndexListRequest, out *GetIndexListResponse) error
+		Search(ctx context.Context, in *SearchRequest, out *SearchResponse) error
 	}
 	type Example struct {
 		example
@@ -159,18 +174,22 @@ func (h *exampleHandler) Add(ctx context.Context, in *AddRequest, out *AddRespon
 	return h.ExampleHandler.Add(ctx, in, out)
 }
 
-func (h *exampleHandler) GetHouseList(ctx context.Context, in *GetHouseListRequest, out *GetHouseListResponse) error {
-	return h.ExampleHandler.GetHouseList(ctx, in, out)
-}
-
-func (h *exampleHandler) GetHouseDesc(ctx context.Context, in *GetHouseDescRequest, out *GetHouseDescResponse) error {
-	return h.ExampleHandler.GetHouseDesc(ctx, in, out)
-}
-
 func (h *exampleHandler) UploadImage(ctx context.Context, in *UploadImageRequest, out *UploadImageResponse) error {
 	return h.ExampleHandler.UploadImage(ctx, in, out)
 }
 
+func (h *exampleHandler) GetLandlordList(ctx context.Context, in *GetLandlordListRequest, out *GetLandlordListResponse) error {
+	return h.ExampleHandler.GetLandlordList(ctx, in, out)
+}
+
+func (h *exampleHandler) GetDesc(ctx context.Context, in *GetDescRequest, out *GetDescResponse) error {
+	return h.ExampleHandler.GetDesc(ctx, in, out)
+}
+
 func (h *exampleHandler) GetIndexList(ctx context.Context, in *GetIndexListRequest, out *GetIndexListResponse) error {
 	return h.ExampleHandler.GetIndexList(ctx, in, out)
+}
+
+func (h *exampleHandler) Search(ctx context.Context, in *SearchRequest, out *SearchResponse) error {
+	return h.ExampleHandler.Search(ctx, in, out)
 }

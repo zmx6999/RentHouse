@@ -5,7 +5,7 @@ This is the Area service
 Generated with
 
 ```
-micro new 190222/area --namespace=go.micro --type=srv
+micro new 190303/area --namespace=go.micro --type=srv
 ```
 
 ## Getting Started

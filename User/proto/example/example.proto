@@ -3,7 +3,7 @@ syntax = "proto3";
 package go.micro.srv.user;
 
 service Example {
-	rpc GenerateId(GenerateIdRequest) returns (GenerateIdResponse) {}
+	rpc GenerateUserId(GenerateUserIdRequest) returns (GenerateUserIdResponse) {}
 	rpc Captcha(CaptchaRequest) returns (CaptchaResponse) {}
 	rpc SmsCaptcha(SmsCaptchaRequest) returns (SmsCaptchaResponse) {}
 	rpc Register(RegisterRequest) returns (RegisterResponse) {}
@@ -17,14 +17,13 @@ message Message {
 	string say = 1;
 }
 
-message GenerateIdRequest {
+message GenerateUserIdRequest {
 
 }
 
-message GenerateIdResponse {
-	string Code = 1;
-	string Msg = 2;
-	bytes UserId = 3;
+message GenerateUserIdResponse {
+	string UserId = 1;
+
 }
 
 message CaptchaRequest {
@@ -32,14 +31,14 @@ message CaptchaRequest {
 }
 
 message CaptchaResponse {
+	bytes Pix = 1;
+	int64 Stride = 2;
 	message Point {
 		int64 X = 1;
 		int64 Y = 2;
 	}
-	Point Max = 1;
-	Point Min = 2;
-	bytes Pix = 3;
-	int64 Stride = 4;
+	Point Max = 3;
+	Point Min = 4;
 }
 
 message SmsCaptchaRequest {
@@ -49,8 +48,7 @@ message SmsCaptchaRequest {
 }
 
 message SmsCaptchaResponse {
-	string Code = 1;
-	string Msg = 2;
+
 }
 
 message RegisterRequest {
@@ -60,12 +58,10 @@ message RegisterRequest {
 }
 
 message RegisterResponse {
-	string Code = 1;
-	string Msg = 2;
-	string UserId = 3;
-	string Mobile = 4;
-	string PrivateKey = 5;
-	string PublicKey = 6;
+	string UserId = 1;
+	string Mobile = 2;
+	string PublicKey = 3;
+	string PrivateKey = 4;
 }
 
 message GetInfoRequest {
@@ -73,9 +69,7 @@ message GetInfoRequest {
 }
 
 message GetInfoResponse {
-	string Code = 1;
-	string Msg = 2;
-	bytes Data = 3;
+	bytes Data = 1;
 }
 
 message AvatarRequest {
@@ -86,8 +80,7 @@ message AvatarRequest {
 }
 
 message AvatarResponse {
-	string Code = 1;
-	string Msg = 2;
+
 }
 
 message RenameRequest {
@@ -96,8 +89,7 @@ message RenameRequest {
 }
 
 message RenameResponse {
-	string Code = 1;
-	string Msg = 2;
+
 }
 
 message AuthRequest {
@@ -107,6 +99,5 @@ message AuthRequest {
 }
 
 message AuthResponse {
-	string Code = 1;
-	string Msg = 2;
+
 }

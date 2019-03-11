@@ -4,52 +4,54 @@ import (
         "github.com/micro/go-log"
 	        "github.com/micro/go-web"
                 "github.com/julienschmidt/httprouter"
-	"190222/utils"
-	"190222/web/handler"
-	)
+
+        "190303/utils"
+	"190303/web/handler"
+)
 
 func main() {
 	// create new web service
-        service := web.NewService(
-                web.Name("go.micro.web.web"),
-                web.Version("latest"),
-                web.Address(":"+utils.APPPort),
-        )
+	service := web.NewService(
+		web.Name("go.micro.web.web"),
+		web.Version("latest"),
+		web.Address(":"+utils.AppPort),
+    )
 
 	// initialise service
-        if err := service.Init(); err != nil {
-                log.Fatal(err)
-        }
+	if err := service.Init(); err != nil {
+		log.Fatal(err)
+	}
 
-	router:=httprouter.New()
+	r:=httprouter.New()
 
-	router.GET("/area/list",handler.GetArea)
+    r.GET("/area/list",handler.GetAreaList)
 
-	router.GET("/user/id",handler.GenerateId)
-	router.GET("/user/captcha/:user_id",handler.Captcha)
-	router.GET("/user/sms",handler.SmsCaptcha)
-	router.POST("/user/register",handler.Register)
-	router.POST("/user/info",handler.GetUserInfo)
-	router.POST("/user/avatar",handler.Avatar)
-	router.POST("/user/rename",handler.Rename)
-	router.POST("/user/auth",handler.Auth)
+	r.GET("/user/id",handler.GenerateUserId)
+	r.GET("/user/captcha/:user_id",handler.Captcha)
+	r.GET("/user/sms",handler.SmsCaptcha)
+	r.POST("/user/register",handler.Register)
+	r.POST("/user/info",handler.GetUserInfo)
+	r.POST("/user/avatar",handler.UploadUserAvatar)
+	r.POST("/user/rename",handler.Rename)
+	r.POST("/user/auth",handler.Auth)
 
-	router.POST("/house/add",handler.AddHouse)
-	router.POST("/house/list",handler.GetHouseList)
-	router.GET("/house/desc/:house_id",handler.GetHouseDesc)
-	router.POST("/house/image/:house_id",handler.UploadHouseImage)
-	router.GET("/house/index",handler.GetIndexHouseList)
+	r.POST("/house/add",handler.AddHouse)
+	r.POST("/house/image",handler.UploadHouseImage)
+	r.POST("/house/list",handler.GetLandlordHouseList)
+	r.GET("/house/desc/:house_id",handler.GetHouseDesc)
+	r.GET("/house/index",handler.GetIndexHouseList)
+	r.GET("/house/search",handler.SearchHouse)
 
-	router.POST("/order/add",handler.AddOrder)
-	router.POST("/order/list",handler.GetOrderList)
-	router.POST("/order/handle",handler.HandleOrder)
-	router.POST("/order/comment",handler.Comment)
+	r.POST("/order/add",handler.AddOrder)
+	r.POST("/order/list",handler.GetOrderList)
+	r.POST("/order/handle",handler.HandleOrder)
+	r.POST("/order/comment",handler.Comment)
 
-	// register call handler
-	service.Handle("/", router)
+	// register html handler
+	service.Handle("/",r)
 
 	// run service
-        if err := service.Run(); err != nil {
-                log.Fatal(err)
-        }
+	if err := service.Run(); err != nil {
+		log.Fatal(err)
+	}
 }

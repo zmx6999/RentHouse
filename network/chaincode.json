@@ -20,8 +20,8 @@
       ]
     }
   ],
-  "chaincode_name": "190222",
-  "chaincode_version": "2.26",
+  "chaincode_name": "190303",
+  "chaincode_version": "1.12",
   "orderer": {
     "orderer_name": "orderer0",
     "port": "7050"

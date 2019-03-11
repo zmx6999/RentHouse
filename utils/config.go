@@ -6,16 +6,17 @@ import (
 )
 
 var (
-	APPPort string
+	AppPort string
 
-	FDFSHost string
-	FDFSPort string
-	FDFSConfig string
-
-	FabricSDKConfig string
 	ChannelId string
-	User string
+	UserName string
+	OrgName string
 	ChaincodeId string
+	ConfigFile string
+
+	FastDFSHost string
+	FastDFSPort string
+	FastDFSConfigFile string
 
 	RedisHost string
 	RedisPort string
@@ -26,27 +27,28 @@ var (
 )
 
 func init()  {
-	conf,err:=config.NewConfig("ini","/root/go/src/190222/conf/app.conf")
+	conf,err:=config.NewConfig("ini","/root/go/src/190303/conf/app.conf")
 	if err!=nil {
 		beego.Error(err)
 		return
 	}
 
-	APPPort=conf.String("APP_PORT")
+	AppPort=conf.String("app_port")
 
-	FDFSHost=conf.String("FDFS_HOST")
-	FDFSPort=conf.String("FDFS_PORT")
-	FDFSConfig=conf.String("FDFS_CONFIG")
+	ChannelId=conf.String("channel_id")
+	UserName=conf.String("username")
+	OrgName=conf.String("org_name")
+	ChaincodeId=conf.String("chaincode_id")
+	ConfigFile=conf.String("config_file")
 
-	FabricSDKConfig=conf.String("FABRIC_SDK_CONFIG")
-	ChannelId=conf.String("CHANNEL_ID")
-	User=conf.String("USER")
-	ChaincodeId=conf.String("CHAINCODE_ID")
+	FastDFSHost=conf.String("fast_dfs_host")
+	FastDFSPort=conf.String("fast_dfs_port")
+	FastDFSConfigFile=conf.String("fast_dfs_config_file")
 
-	RedisHost=conf.String("REDIS_HOST")
-	RedisPort=conf.String("REDIS_PORT")
+	RedisHost=conf.String("redis_host")
+	RedisPort=conf.String("redis_port")
 
-	MessageAppId=conf.String("MESSAGE_APP_ID")
-	MessageAppKey=conf.String("MESSAGE_APP_KEY")
-	MessageProject=conf.String("MESSAGE_PROJECT")
+	MessageAppId=conf.String("message_app_id")
+	MessageAppKey=conf.String("message_app_key")
+	MessageProject=conf.String("message_project")
 }

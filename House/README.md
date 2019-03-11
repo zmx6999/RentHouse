@@ -5,7 +5,7 @@ This is the House service
 Generated with
 
 ```
-micro new 190222/house --namespace=go.micro --type=srv
+micro new 190303/house --namespace=go.micro --type=srv
 ```
 
 ## Getting Started
