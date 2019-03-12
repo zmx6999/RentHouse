@@ -15,8 +15,9 @@ type Example struct{}
 // Call is a single request handler called via client.Call or the generated client code
 func (e *Example) GetAreaList(ctx context.Context, req *example.GetAreaListRequest, rsp *example.GetAreaListResponse) error {
 	aKey:="area_list"
-	conn,err:=redis.Dial("tcp",utils.RedisHost+":"+utils.RedisPort)
+	conn,err:=redis.Dial("tcp",utils.RedisHost+":"+utils.RedisPort,redis.DialPassword(utils.RedisPassword))
 	if err==nil {
+		defer conn.Close()
 		data,_:=redis.Bytes(conn.Do("get",aKey))
 		if data!=nil {
 			beego.Info(data)
@@ -24,7 +25,6 @@ func (e *Example) GetAreaList(ctx context.Context, req *example.GetAreaListReque
 			return nil
 		}
 	}
-	defer conn.Close()
 
 	ccs,err:=models.Initialize(utils.ChannelId, utils.UserName, utils.OrgName, utils.ChaincodeId, utils.ConfigFile)
 	if err!=nil {
@@ -37,7 +37,9 @@ func (e *Example) GetAreaList(ctx context.Context, req *example.GetAreaListReque
 	}
 	rsp.Data=data
 
-	conn.Do("set",aKey,data,"EX",3600)
+	if conn!=nil {
+		conn.Do("set",aKey,data,"EX",3600)
+	}
 
 	return nil
 }

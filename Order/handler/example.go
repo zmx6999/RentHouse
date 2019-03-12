@@ -78,7 +78,7 @@ func (e *Example) Comment(ctx context.Context, req *example.CommentRequest, rsp 
 		return err
 	}
 
-	conn,err:=redis.Dial("tcp",utils.RedisHost+":"+utils.RedisPort)
+	conn,err:=redis.Dial("tcp",utils.RedisHost+":"+utils.RedisPort,redis.DialPassword(utils.RedisPassword))
 	if err!=nil {
 		return err
 	}

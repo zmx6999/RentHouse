@@ -20,6 +20,7 @@ var (
 
 	RedisHost string
 	RedisPort string
+	RedisPassword string
 
 	MessageAppId string
 	MessageAppKey string
@@ -27,7 +28,7 @@ var (
 )
 
 func init()  {
-	conf,err:=config.NewConfig("ini","/root/go/src/190303/conf/app.conf")
+	conf,err:=config.NewConfig("ini","conf/app.conf")
 	if err!=nil {
 		beego.Error(err)
 		return
@@ -47,6 +48,7 @@ func init()  {
 
 	RedisHost=conf.String("redis_host")
 	RedisPort=conf.String("redis_port")
+	RedisPassword=conf.String("redis_password")
 
 	MessageAppId=conf.String("message_app_id")
 	MessageAppKey=conf.String("message_app_key")

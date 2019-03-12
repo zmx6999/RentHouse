@@ -1,3 +1,5 @@
 FROM alpine:3.2
-ADD area-srv /area-srv
-ENTRYPOINT [ "/area-srv" ]
+ADD conf /conf
+ADD area /area
+ADD crypto-config /crypto-config
+ENTRYPOINT [ "/area" ]

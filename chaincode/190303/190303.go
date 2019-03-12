@@ -1172,16 +1172,30 @@ func (this *RentingChaincode) searchHouse(stub shim.ChaincodeStubInterface,args 
 		query["selector"]=querySelector
 		query["use_index"]=[]string{"_design/houseAreaDoc","houseArea"}
 	}
-	if args[1]!="" {
+	if args[1]!="" && args[2]=="" {
 		start,_:=time.Parse("2006-01-02 15:04:05",args[1]+" 00:00:00")
 		querySelector:=query["selector"].(map[string]interface{})
 		querySelector["CreateTime"]=map[string]interface{}{"$gte":start}
 		query["selector"]=querySelector
 	}
-	if args[2]!="" {
+	if args[1]=="" && args[2]!="" {
 		end,_:=time.Parse("2006-01-02 15:04:05",args[2]+" 23:59:59")
 		querySelector:=query["selector"].(map[string]interface{})
 		querySelector["CreateTime"]=map[string]interface{}{"$lte":end}
+		query["selector"]=querySelector
+	}
+	if args[1]!="" && args[2]!="" {
+		start,_:=time.Parse("2006-01-02 15:04:05",args[1]+" 00:00:00")
+		end,_:=time.Parse("2006-01-02 15:04:05",args[2]+" 23:59:59")
+		querySelector:=query["selector"].(map[string]interface{})
+		querySelector["$and"]=[]map[string]interface{}{
+			map[string]interface{}{
+				"CreateTime":map[string]interface{}{"$gte":start},
+			},
+			map[string]interface{}{
+				"CreateTime":map[string]interface{}{"$lte":end},
+			},
+		}
 		query["selector"]=querySelector
 	}
 

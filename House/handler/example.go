@@ -72,7 +72,7 @@ func (e *Example) UploadImage(ctx context.Context, req *example.UploadImageReque
 		return err
 	}
 
-	conn,err:=redis.Dial("tcp",utils.RedisHost+":"+utils.RedisPort)
+	conn,err:=redis.Dial("tcp",utils.RedisHost+":"+utils.RedisPort,redis.DialPassword(utils.RedisPassword))
 	if err!=nil {
 		return err
 	}
@@ -103,8 +103,9 @@ func (e *Example) GetLandlordList(ctx context.Context, req *example.GetLandlordL
 
 func (e *Example) GetDesc(ctx context.Context, req *example.GetDescRequest, rsp *example.GetDescResponse) error {
 	hKey:="house_"+req.HouseId
-	conn,err:=redis.Dial("tcp",utils.RedisHost+":"+utils.RedisPort)
+	conn,err:=redis.Dial("tcp",utils.RedisHost+":"+utils.RedisPort,redis.DialPassword(utils.RedisPassword))
 	if err==nil {
+		defer conn.Close()
 		data,_:=redis.Bytes(conn.Do("get",hKey))
 		if data!=nil {
 			beego.Info(data)
@@ -112,7 +113,6 @@ func (e *Example) GetDesc(ctx context.Context, req *example.GetDescRequest, rsp 
 			return nil
 		}
 	}
-	defer conn.Close()
 
 	ccs,err:=models.Initialize(utils.ChannelId, utils.UserName, utils.OrgName, utils.ChaincodeId, utils.ConfigFile)
 	if err!=nil {
@@ -125,7 +125,9 @@ func (e *Example) GetDesc(ctx context.Context, req *example.GetDescRequest, rsp 
 	}
 	rsp.Data=data
 
-	conn.Do("set",hKey,data,"EX",3600)
+	if conn!=nil {
+		conn.Do("set",hKey,data,"EX",3600)
+	}
 
 	return nil
 }

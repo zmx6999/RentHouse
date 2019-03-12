@@ -52,7 +52,7 @@ func (e *Example) Captcha(ctx context.Context, req *example.CaptchaRequest, rsp 
 
 	img,str:=capt.Create(4,captcha.NUM)
 
-	conn,err:=redis.Dial("tcp",utils.RedisHost+":"+utils.RedisPort)
+	conn,err:=redis.Dial("tcp",utils.RedisHost+":"+utils.RedisPort,redis.DialPassword(utils.RedisPassword))
 	if err!=nil {
 		return err
 	}
@@ -74,7 +74,7 @@ func (e *Example) Captcha(ctx context.Context, req *example.CaptchaRequest, rsp 
 }
 
 func (e *Example) SmsCaptcha(ctx context.Context, req *example.SmsCaptchaRequest, rsp *example.SmsCaptchaResponse) error {
-	conn,err:=redis.Dial("tcp",utils.RedisHost+":"+utils.RedisPort)
+	conn,err:=redis.Dial("tcp",utils.RedisHost+":"+utils.RedisPort,redis.DialPassword(utils.RedisPassword))
 	if err!=nil {
 		return err
 	}
@@ -113,7 +113,7 @@ func (e *Example) SmsCaptcha(ctx context.Context, req *example.SmsCaptchaRequest
 }
 
 func (e *Example) Register(ctx context.Context, req *example.RegisterRequest, rsp *example.RegisterResponse) error {
-	conn,err:=redis.Dial("tcp",utils.RedisHost+":"+utils.RedisPort)
+	conn,err:=redis.Dial("tcp",utils.RedisHost+":"+utils.RedisPort,redis.DialPassword(utils.RedisPassword))
 	if err!=nil {
 		return err
 	}
