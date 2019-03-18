@@ -1,3 +1,5 @@
-FROM alpine
-ADD house-srv /house-srv
-ENTRYPOINT [ "/house-srv" ]
+FROM alpine:3.2
+ADD house /house
+ADD conf /conf
+ADD crypto-config /crypto-config
+ENTRYPOINT [ "/house" ]

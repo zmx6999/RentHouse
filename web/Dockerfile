@@ -1,5 +1,8 @@
-FROM alpine
+FROM alpine:3.2
 ADD html /html
-ADD web-web /web-web
+ADD web /web
+ADD conf /conf
+ADD crypto-config /crypto-config
 WORKDIR /
-ENTRYPOINT [ "/web-web" ]
+ENTRYPOINT [ "/web" ]
+EXPOSE 8000

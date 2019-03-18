@@ -26,7 +26,7 @@ var (
 )
 
 func init()  {
-	conf, err := config.NewConfig("ini", "/root/go/src/190316/conf/app.conf")
+	conf, err := config.NewConfig("ini", "conf/app.conf")
 	if err != nil {
 		beego.Error(err)
 		return
