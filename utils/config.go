@@ -1,12 +1,12 @@
 package utils
 
 import (
-	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/config"
+	"github.com/astaxie/beego"
 )
 
 var (
-	AppPort string
+	HttpPort string
 
 	ChannelId string
 	UserName string
@@ -14,8 +14,6 @@ var (
 	ChaincodeId string
 	ConfigFile string
 
-	FastDFSHost string
-	FastDFSPort string
 	FastDFSConfigFile string
 
 	RedisHost string
@@ -28,29 +26,27 @@ var (
 )
 
 func init()  {
-	conf,err:=config.NewConfig("ini","conf/app.conf")
-	if err!=nil {
+	conf, err := config.NewConfig("ini", "/root/go/src/190316/conf/app.conf")
+	if err != nil {
 		beego.Error(err)
 		return
 	}
 
-	AppPort=conf.String("app_port")
+	HttpPort = conf.String("httpport")
 
-	ChannelId=conf.String("channel_id")
-	UserName=conf.String("username")
-	OrgName=conf.String("org_name")
-	ChaincodeId=conf.String("chaincode_id")
-	ConfigFile=conf.String("config_file")
+	ChannelId = conf.String("channel_id")
+	UserName = conf.String("user_name")
+	OrgName = conf.String("org_name")
+	ChaincodeId = conf.String("chaincode_id")
+	ConfigFile = conf.String("config_file")
 
-	FastDFSHost=conf.String("fast_dfs_host")
-	FastDFSPort=conf.String("fast_dfs_port")
-	FastDFSConfigFile=conf.String("fast_dfs_config_file")
+	FastDFSConfigFile = conf.String("fast_dfs_config_file")
 
-	RedisHost=conf.String("redis_host")
-	RedisPort=conf.String("redis_port")
-	RedisPassword=conf.String("redis_password")
+	RedisHost = conf.String("redis_host")
+	RedisPort = conf.String("redis_port")
+	RedisPassword = conf.String("redis_password")
 
-	MessageAppId=conf.String("message_app_id")
-	MessageAppKey=conf.String("message_app_key")
-	MessageProject=conf.String("message_project")
+	MessageAppId = conf.String("message_app_id")
+	MessageAppKey = conf.String("message_app_key")
+	MessageProject = conf.String("message_project")
 }

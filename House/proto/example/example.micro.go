@@ -11,14 +11,12 @@ It has these top-level messages:
 	Message
 	AddRequest
 	AddResponse
-	UploadImageRequest
-	UploadImageResponse
 	GetLandlordListRequest
 	GetLandlordListResponse
+	UploadImageRequest
+	UploadImageResponse
 	GetDescRequest
 	GetDescResponse
-	GetIndexListRequest
-	GetIndexListResponse
 	SearchRequest
 	SearchResponse
 */
@@ -54,10 +52,9 @@ var _ server.Option
 
 type ExampleService interface {
 	Add(ctx context.Context, in *AddRequest, opts ...client.CallOption) (*AddResponse, error)
-	UploadImage(ctx context.Context, in *UploadImageRequest, opts ...client.CallOption) (*UploadImageResponse, error)
 	GetLandlordList(ctx context.Context, in *GetLandlordListRequest, opts ...client.CallOption) (*GetLandlordListResponse, error)
+	UploadImage(ctx context.Context, in *UploadImageRequest, opts ...client.CallOption) (*UploadImageResponse, error)
 	GetDesc(ctx context.Context, in *GetDescRequest, opts ...client.CallOption) (*GetDescResponse, error)
-	GetIndexList(ctx context.Context, in *GetIndexListRequest, opts ...client.CallOption) (*GetIndexListResponse, error)
 	Search(ctx context.Context, in *SearchRequest, opts ...client.CallOption) (*SearchResponse, error)
 }
 
@@ -89,16 +86,6 @@ func (c *exampleService) Add(ctx context.Context, in *AddRequest, opts ...client
 	return out, nil
 }
 
-func (c *exampleService) UploadImage(ctx context.Context, in *UploadImageRequest, opts ...client.CallOption) (*UploadImageResponse, error) {
-	req := c.c.NewRequest(c.name, "Example.UploadImage", in)
-	out := new(UploadImageResponse)
-	err := c.c.Call(ctx, req, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *exampleService) GetLandlordList(ctx context.Context, in *GetLandlordListRequest, opts ...client.CallOption) (*GetLandlordListResponse, error) {
 	req := c.c.NewRequest(c.name, "Example.GetLandlordList", in)
 	out := new(GetLandlordListResponse)
@@ -109,9 +96,9 @@ func (c *exampleService) GetLandlordList(ctx context.Context, in *GetLandlordLis
 	return out, nil
 }
 
-func (c *exampleService) GetDesc(ctx context.Context, in *GetDescRequest, opts ...client.CallOption) (*GetDescResponse, error) {
-	req := c.c.NewRequest(c.name, "Example.GetDesc", in)
-	out := new(GetDescResponse)
+func (c *exampleService) UploadImage(ctx context.Context, in *UploadImageRequest, opts ...client.CallOption) (*UploadImageResponse, error) {
+	req := c.c.NewRequest(c.name, "Example.UploadImage", in)
+	out := new(UploadImageResponse)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -119,9 +106,9 @@ func (c *exampleService) GetDesc(ctx context.Context, in *GetDescRequest, opts .
 	return out, nil
 }
 
-func (c *exampleService) GetIndexList(ctx context.Context, in *GetIndexListRequest, opts ...client.CallOption) (*GetIndexListResponse, error) {
-	req := c.c.NewRequest(c.name, "Example.GetIndexList", in)
-	out := new(GetIndexListResponse)
+func (c *exampleService) GetDesc(ctx context.Context, in *GetDescRequest, opts ...client.CallOption) (*GetDescResponse, error) {
+	req := c.c.NewRequest(c.name, "Example.GetDesc", in)
+	out := new(GetDescResponse)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -143,20 +130,18 @@ func (c *exampleService) Search(ctx context.Context, in *SearchRequest, opts ...
 
 type ExampleHandler interface {
 	Add(context.Context, *AddRequest, *AddResponse) error
-	UploadImage(context.Context, *UploadImageRequest, *UploadImageResponse) error
 	GetLandlordList(context.Context, *GetLandlordListRequest, *GetLandlordListResponse) error
+	UploadImage(context.Context, *UploadImageRequest, *UploadImageResponse) error
 	GetDesc(context.Context, *GetDescRequest, *GetDescResponse) error
-	GetIndexList(context.Context, *GetIndexListRequest, *GetIndexListResponse) error
 	Search(context.Context, *SearchRequest, *SearchResponse) error
 }
 
 func RegisterExampleHandler(s server.Server, hdlr ExampleHandler, opts ...server.HandlerOption) error {
 	type example interface {
 		Add(ctx context.Context, in *AddRequest, out *AddResponse) error
-		UploadImage(ctx context.Context, in *UploadImageRequest, out *UploadImageResponse) error
 		GetLandlordList(ctx context.Context, in *GetLandlordListRequest, out *GetLandlordListResponse) error
+		UploadImage(ctx context.Context, in *UploadImageRequest, out *UploadImageResponse) error
 		GetDesc(ctx context.Context, in *GetDescRequest, out *GetDescResponse) error
-		GetIndexList(ctx context.Context, in *GetIndexListRequest, out *GetIndexListResponse) error
 		Search(ctx context.Context, in *SearchRequest, out *SearchResponse) error
 	}
 	type Example struct {
@@ -174,20 +159,16 @@ func (h *exampleHandler) Add(ctx context.Context, in *AddRequest, out *AddRespon
 	return h.ExampleHandler.Add(ctx, in, out)
 }
 
-func (h *exampleHandler) UploadImage(ctx context.Context, in *UploadImageRequest, out *UploadImageResponse) error {
-	return h.ExampleHandler.UploadImage(ctx, in, out)
-}
-
 func (h *exampleHandler) GetLandlordList(ctx context.Context, in *GetLandlordListRequest, out *GetLandlordListResponse) error {
 	return h.ExampleHandler.GetLandlordList(ctx, in, out)
 }
 
-func (h *exampleHandler) GetDesc(ctx context.Context, in *GetDescRequest, out *GetDescResponse) error {
-	return h.ExampleHandler.GetDesc(ctx, in, out)
+func (h *exampleHandler) UploadImage(ctx context.Context, in *UploadImageRequest, out *UploadImageResponse) error {
+	return h.ExampleHandler.UploadImage(ctx, in, out)
 }
 
-func (h *exampleHandler) GetIndexList(ctx context.Context, in *GetIndexListRequest, out *GetIndexListResponse) error {
-	return h.ExampleHandler.GetIndexList(ctx, in, out)
+func (h *exampleHandler) GetDesc(ctx context.Context, in *GetDescRequest, out *GetDescResponse) error {
+	return h.ExampleHandler.GetDesc(ctx, in, out)
 }
 
 func (h *exampleHandler) Search(ctx context.Context, in *SearchRequest, out *SearchResponse) error {

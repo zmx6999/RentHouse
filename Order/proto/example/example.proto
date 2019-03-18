@@ -27,7 +27,7 @@ message GetListRequest {
 }
 
 message GetListResponse {
-	bytes Data = 1;
+	bytes Data = 2;
 }
 
 message HandleRequest {

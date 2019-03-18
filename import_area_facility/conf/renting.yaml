@@ -58,7 +58,7 @@ client:
 
   # Root of the MSP directories with keys and certs.
   cryptoconfig:
-    path: /root/fabric/scripts/fabric-samples/190303/network/crypto-config
+    path: /root/fabric/scripts/fabric-samples/190316/network/crypto-config
 
   # Some SDKs support pluggable KV stores, the properties under "credentialStore"
   # are implementation specific
@@ -251,7 +251,7 @@ orderers:
 
     tlsCACerts:
       # Certificate location absolute path
-      path: /root/fabric/scripts/fabric-samples/190303/network/crypto-config/ordererOrganizations/house.com/tlsca/tlsca.house.com-cert.pem
+      path: /root/fabric/scripts/fabric-samples/190316/network/crypto-config/ordererOrganizations/house.com/tlsca/tlsca.house.com-cert.pem
 
   orderer1.house.com:
     url: grpcs://orderer1.house.com:8050
@@ -263,7 +263,7 @@ orderers:
       fail-fast: false
       allow-insecure: false
     tlsCACerts:
-      path: /root/fabric/scripts/fabric-samples/190303/network/crypto-config/ordererOrganizations/house.com/tlsca/tlsca.house.com-cert.pem
+      path: /root/fabric/scripts/fabric-samples/190316/network/crypto-config/ordererOrganizations/house.com/tlsca/tlsca.house.com-cert.pem
 
 #
 # List of peers to send various requests to, including endorsement, query
@@ -294,7 +294,7 @@ peers:
 
     tlsCACerts:
       # Certificate location absolute path
-      path: /root/fabric/scripts/fabric-samples/190303/network/crypto-config/peerOrganizations/orgrenting.house.com/tlsca/tlsca.orgrenting.house.com-cert.pem
+      path: /root/fabric/scripts/fabric-samples/190316/network/crypto-config/peerOrganizations/orgrenting.house.com/tlsca/tlsca.orgrenting.house.com-cert.pem
 
   peer1.orgrenting.house.com:
     url: grpcs://peer1.orgrenting.house.com:8051
@@ -311,7 +311,7 @@ peers:
       fail-fast: false
       allow-insecure: false
     tlsCACerts:
-      path: /root/fabric/scripts/fabric-samples/190303/network/crypto-config/peerOrganizations/orgrenting.house.com/tlsca/tlsca.orgrenting.house.com-cert.pem
+      path: /root/fabric/scripts/fabric-samples/190316/network/crypto-config/peerOrganizations/orgrenting.house.com/tlsca/tlsca.orgrenting.house.com-cert.pem
 
 #
 # Fabric-CA is a special kind of Certificate Authority provided by Hyperledger Fabric which allows
@@ -323,7 +323,7 @@ certificateAuthorities:
     url: https://ca_OrgRenting:7054
     tlsCACerts:
       # Certificate location absolute path
-      path: /root/fabric/scripts/fabric-samples/190303/network/crypto-config/peerOrganizations/orgrenting.house.com/ca/ca.orgrenting.house.com-cert.pem
+      path: /root/fabric/scripts/fabric-samples/190316/network/crypto-config/peerOrganizations/orgrenting.house.com/ca/ca.orgrenting.house.com-cert.pem
 
     # Fabric-CA supports dynamic user enrollment via REST APIs. A "root" user, a.k.a registrar, is
     # needed to enroll and invoke new users.

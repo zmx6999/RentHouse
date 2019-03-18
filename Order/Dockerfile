@@ -1,5 +1,3 @@
 FROM alpine
-ADD conf /conf
-ADD order /order
-ADD crypto-config /crypto-config
-ENTRYPOINT [ "/order" ]
+ADD order-srv /order-srv
+ENTRYPOINT [ "/order-srv" ]

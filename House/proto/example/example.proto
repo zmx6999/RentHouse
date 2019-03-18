@@ -4,10 +4,9 @@ package go.micro.srv.house;
 
 service Example {
 	rpc Add(AddRequest) returns (AddResponse) {}
-	rpc UploadImage(UploadImageRequest) returns (UploadImageResponse) {}
 	rpc GetLandlordList(GetLandlordListRequest) returns (GetLandlordListResponse) {}
+	rpc UploadImage(UploadImageRequest) returns (UploadImageResponse) {}
 	rpc GetDesc(GetDescRequest) returns (GetDescResponse) {}
-	rpc GetIndexList(GetIndexListRequest) returns (GetIndexListResponse) {}
 	rpc Search(SearchRequest) returns (SearchResponse) {}
 }
 
@@ -23,18 +22,6 @@ message AddResponse {
 
 }
 
-message UploadImageRequest {
-	string Mobile = 1;
-	string HouseId = 2;
-	bytes Data = 3;
-	int64 FileSize = 4;
-	string FileName = 5;
-}
-
-message UploadImageResponse {
-
-}
-
 message GetLandlordListRequest {
 	string Mobile = 1;
 }
@@ -43,19 +30,23 @@ message GetLandlordListResponse {
 	bytes Data = 1;
 }
 
+message UploadImageRequest {
+	string Mobile = 1;
+	string HouseId = 2;
+	bytes Data = 3;
+	string FileName = 4;
+	int64 FileSize = 5;
+}
+
+message UploadImageResponse {
+
+}
+
 message GetDescRequest {
 	string HouseId = 1;
 }
 
 message GetDescResponse {
-	bytes Data = 1;
-}
-
-message GetIndexListRequest {
-
-}
-
-message GetIndexListResponse {
 	bytes Data = 1;
 }
 

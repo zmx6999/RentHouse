@@ -3,7 +3,7 @@ syntax = "proto3";
 package go.micro.srv.user;
 
 service Example {
-	rpc GenerateUserId(GenerateUserIdRequest) returns (GenerateUserIdResponse) {}
+	rpc GenerateId(GenerateIdRequest) returns (GenerateIdResponse) {}
 	rpc Captcha(CaptchaRequest) returns (CaptchaResponse) {}
 	rpc SmsCaptcha(SmsCaptchaRequest) returns (SmsCaptchaResponse) {}
 	rpc Register(RegisterRequest) returns (RegisterResponse) {}
@@ -17,13 +17,12 @@ message Message {
 	string say = 1;
 }
 
-message GenerateUserIdRequest {
+message GenerateIdRequest {
 
 }
 
-message GenerateUserIdResponse {
+message GenerateIdResponse {
 	string UserId = 1;
-
 }
 
 message CaptchaRequest {
@@ -37,8 +36,8 @@ message CaptchaResponse {
 		int64 X = 1;
 		int64 Y = 2;
 	}
-	Point Max = 3;
-	Point Min = 4;
+	Point Min = 3;
+	Point Max = 4;
 }
 
 message SmsCaptchaRequest {

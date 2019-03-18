@@ -9,8 +9,8 @@ It is generated from these files:
 
 It has these top-level messages:
 	Message
-	GetAreaListRequest
-	GetAreaListResponse
+	GetListRequest
+	GetListResponse
 */
 package go_micro_srv_area
 
@@ -43,7 +43,7 @@ var _ server.Option
 // Client API for Example service
 
 type ExampleService interface {
-	GetAreaList(ctx context.Context, in *GetAreaListRequest, opts ...client.CallOption) (*GetAreaListResponse, error)
+	GetList(ctx context.Context, in *GetListRequest, opts ...client.CallOption) (*GetListResponse, error)
 }
 
 type exampleService struct {
@@ -64,9 +64,9 @@ func NewExampleService(name string, c client.Client) ExampleService {
 	}
 }
 
-func (c *exampleService) GetAreaList(ctx context.Context, in *GetAreaListRequest, opts ...client.CallOption) (*GetAreaListResponse, error) {
-	req := c.c.NewRequest(c.name, "Example.GetAreaList", in)
-	out := new(GetAreaListResponse)
+func (c *exampleService) GetList(ctx context.Context, in *GetListRequest, opts ...client.CallOption) (*GetListResponse, error) {
+	req := c.c.NewRequest(c.name, "Example.GetList", in)
+	out := new(GetListResponse)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -77,12 +77,12 @@ func (c *exampleService) GetAreaList(ctx context.Context, in *GetAreaListRequest
 // Server API for Example service
 
 type ExampleHandler interface {
-	GetAreaList(context.Context, *GetAreaListRequest, *GetAreaListResponse) error
+	GetList(context.Context, *GetListRequest, *GetListResponse) error
 }
 
 func RegisterExampleHandler(s server.Server, hdlr ExampleHandler, opts ...server.HandlerOption) error {
 	type example interface {
-		GetAreaList(ctx context.Context, in *GetAreaListRequest, out *GetAreaListResponse) error
+		GetList(ctx context.Context, in *GetListRequest, out *GetListResponse) error
 	}
 	type Example struct {
 		example
@@ -95,6 +95,6 @@ type exampleHandler struct {
 	ExampleHandler
 }
 
-func (h *exampleHandler) GetAreaList(ctx context.Context, in *GetAreaListRequest, out *GetAreaListResponse) error {
-	return h.ExampleHandler.GetAreaList(ctx, in, out)
+func (h *exampleHandler) GetList(ctx context.Context, in *GetListRequest, out *GetListResponse) error {
+	return h.ExampleHandler.GetList(ctx, in, out)
 }

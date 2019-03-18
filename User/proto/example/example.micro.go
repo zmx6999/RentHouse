@@ -9,8 +9,8 @@ It is generated from these files:
 
 It has these top-level messages:
 	Message
-	GenerateUserIdRequest
-	GenerateUserIdResponse
+	GenerateIdRequest
+	GenerateIdResponse
 	CaptchaRequest
 	CaptchaResponse
 	SmsCaptchaRequest
@@ -57,7 +57,7 @@ var _ server.Option
 // Client API for Example service
 
 type ExampleService interface {
-	GenerateUserId(ctx context.Context, in *GenerateUserIdRequest, opts ...client.CallOption) (*GenerateUserIdResponse, error)
+	GenerateId(ctx context.Context, in *GenerateIdRequest, opts ...client.CallOption) (*GenerateIdResponse, error)
 	Captcha(ctx context.Context, in *CaptchaRequest, opts ...client.CallOption) (*CaptchaResponse, error)
 	SmsCaptcha(ctx context.Context, in *SmsCaptchaRequest, opts ...client.CallOption) (*SmsCaptchaResponse, error)
 	Register(ctx context.Context, in *RegisterRequest, opts ...client.CallOption) (*RegisterResponse, error)
@@ -85,9 +85,9 @@ func NewExampleService(name string, c client.Client) ExampleService {
 	}
 }
 
-func (c *exampleService) GenerateUserId(ctx context.Context, in *GenerateUserIdRequest, opts ...client.CallOption) (*GenerateUserIdResponse, error) {
-	req := c.c.NewRequest(c.name, "Example.GenerateUserId", in)
-	out := new(GenerateUserIdResponse)
+func (c *exampleService) GenerateId(ctx context.Context, in *GenerateIdRequest, opts ...client.CallOption) (*GenerateIdResponse, error) {
+	req := c.c.NewRequest(c.name, "Example.GenerateId", in)
+	out := new(GenerateIdResponse)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -168,7 +168,7 @@ func (c *exampleService) Auth(ctx context.Context, in *AuthRequest, opts ...clie
 // Server API for Example service
 
 type ExampleHandler interface {
-	GenerateUserId(context.Context, *GenerateUserIdRequest, *GenerateUserIdResponse) error
+	GenerateId(context.Context, *GenerateIdRequest, *GenerateIdResponse) error
 	Captcha(context.Context, *CaptchaRequest, *CaptchaResponse) error
 	SmsCaptcha(context.Context, *SmsCaptchaRequest, *SmsCaptchaResponse) error
 	Register(context.Context, *RegisterRequest, *RegisterResponse) error
@@ -180,7 +180,7 @@ type ExampleHandler interface {
 
 func RegisterExampleHandler(s server.Server, hdlr ExampleHandler, opts ...server.HandlerOption) error {
 	type example interface {
-		GenerateUserId(ctx context.Context, in *GenerateUserIdRequest, out *GenerateUserIdResponse) error
+		GenerateId(ctx context.Context, in *GenerateIdRequest, out *GenerateIdResponse) error
 		Captcha(ctx context.Context, in *CaptchaRequest, out *CaptchaResponse) error
 		SmsCaptcha(ctx context.Context, in *SmsCaptchaRequest, out *SmsCaptchaResponse) error
 		Register(ctx context.Context, in *RegisterRequest, out *RegisterResponse) error
@@ -200,8 +200,8 @@ type exampleHandler struct {
 	ExampleHandler
 }
 
-func (h *exampleHandler) GenerateUserId(ctx context.Context, in *GenerateUserIdRequest, out *GenerateUserIdResponse) error {
-	return h.ExampleHandler.GenerateUserId(ctx, in, out)
+func (h *exampleHandler) GenerateId(ctx context.Context, in *GenerateIdRequest, out *GenerateIdResponse) error {
+	return h.ExampleHandler.GenerateId(ctx, in, out)
 }
 
 func (h *exampleHandler) Captcha(ctx context.Context, in *CaptchaRequest, out *CaptchaResponse) error {

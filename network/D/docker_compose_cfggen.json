@@ -1,15 +1,5 @@
 {
   "domain": "house.com",
-  "cas": [
-    {
-      "peer_org_name": "OrgRenting",
-      "ports": [
-        "7054"
-      ],
-      "admin_name": "admin",
-      "admin_password": "adminpw"
-    }
-  ],
   "kafkas": [
     {
       "host_name": "kafka3",

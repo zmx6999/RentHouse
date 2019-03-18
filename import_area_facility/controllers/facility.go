@@ -2,10 +2,9 @@ package controllers
 
 import (
 	"os"
-	"190305/models"
 	"encoding/csv"
+	"190316/import_area_facility/models"
 	"io"
-	"github.com/pkg/errors"
 	"strconv"
 	"github.com/astaxie/beego"
 	"encoding/json"
@@ -18,65 +17,64 @@ type FacilityController struct {
 func (this *FacilityController) Add()  {
 	file, err := os.Open("facility.csv")
 	if err != nil {
-		this.handleError(500, err)
+		this.handleResponse(500, err.Error(), nil)
 		return
 	}
 	defer file.Close()
 
 	ccs, err := models.Initialize(models.ChannelId, models.UserName, models.OrgName, models.ChaincodeId, models.ConfigFile)
 	if err != nil {
-		this.handleError(500, err)
+		this.handleResponse(500, err.Error(), nil)
 		return
 	}
 
 	reader := csv.NewReader(file)
-	line := 0
+	facilityId := 0
 	for  {
-		line++
-		lineStr := strconv.Itoa(line)
-		row, err := reader.Read()
+		line, err := reader.Read()
 		if err == io.EOF {
 			break
 		}
 		if err != nil {
-			this.handleError(500, err)
+			this.handleResponse(500, err.Error(), nil)
 			return
 		}
-		if len(row) < 1 {
-			this.handleError(500, errors.New("invalid line " + lineStr))
+		if len(line) < 1 {
+			this.handleResponse(500, "invalid format", nil)
 			return
 		}
 
-		txId, err := ccs.ChaincodeUpdate(models.ChaincodeId, "addFacility", [][]byte{[]byte(lineStr), []byte(row[0])})
+		facilityId++
+		txId, err := ccs.ChaincodeUpdate(models.ChaincodeId, "addFacility", [][]byte{[]byte(strconv.Itoa(facilityId)), []byte(line[0])})
 		if err != nil {
-			this.handleError(500, err)
+			this.handleResponse(500, err.Error(), nil)
 			return
 		}
 		beego.Info(string(txId))
 	}
 
-	this.handleSuccess(nil)
+	this.handleResponse(200, "ok", nil)
 }
 
-func (this *FacilityController) Get()  {
+func (this *FacilityController) List() {
 	ccs, err := models.Initialize(models.ChannelId, models.UserName, models.OrgName, models.ChaincodeId, models.ConfigFile)
 	if err != nil {
-		this.handleError(500, err)
+		this.handleResponse(500, err.Error(), nil)
 		return
 	}
 
-	data, err := ccs.ChaincodeQuery(models.ChaincodeId, "getFacilityList", [][]byte{})
+	_data, err := ccs.ChaincodeQuery(models.ChaincodeId, "getFacilityList", [][]byte{})
 	if err != nil {
-		this.handleError(500, err)
+		this.handleResponse(500, err.Error(), nil)
 		return
 	}
 
-	var facilityList []map[string]interface{}
-	err = json.Unmarshal(data, &facilityList)
+	var data []map[string]interface{}
+	err = json.Unmarshal(_data, &data)
 	if err != nil {
-		this.handleError(500, err)
+		this.handleResponse(500, err.Error(), nil)
 		return
 	}
 
-	this.handleSuccess(facilityList)
+	this.handleResponse(200, "ok", data)
 }

@@ -21,7 +21,7 @@ type ChaincodeSpec struct {
 }
 
 func Initialize(channelId string, userName string, orgName string, chaincodeId string, configFile string) (*ChaincodeSpec, error) {
-	sdk,err := fabsdk.New(config.FromFile(ConfigFile))
+	sdk, err := fabsdk.New(config.FromFile(configFile))
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +49,7 @@ func (this *ChaincodeSpec) ChaincodeUpdate(chaincodeId string, function string, 
 
 func init()  {
 	ChannelId = beego.AppConfig.String("channel_id")
-	UserName = beego.AppConfig.String("username")
+	UserName = beego.AppConfig.String("user_name")
 	OrgName = beego.AppConfig.String("org_name")
 	ChaincodeId = beego.AppConfig.String("chaincode_id")
 	ConfigFile = beego.AppConfig.String("config_file")

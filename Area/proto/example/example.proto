@@ -3,17 +3,17 @@ syntax = "proto3";
 package go.micro.srv.area;
 
 service Example {
-	rpc GetAreaList(GetAreaListRequest) returns (GetAreaListResponse) {}
+	rpc GetList(GetListRequest) returns (GetListResponse) {}
 }
 
 message Message {
 	string say = 1;
 }
 
-message GetAreaListRequest {
+message GetListRequest {
 
 }
 
-message GetAreaListResponse {
+message GetListResponse {
 	bytes Data = 1;
 }

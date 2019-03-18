@@ -5,7 +5,7 @@ This is the Web service
 Generated with
 
 ```
-micro new 190303/web --namespace=go.micro --type=web
+micro new 190316/web --namespace=go.micro --type=web
 ```
 
 ## Getting Started
@@ -22,7 +22,9 @@ micro new 190303/web --namespace=go.micro --type=web
 
 ## Dependencies
 
-Micro services depend on service discovery. The default is consul.
+Micro services depend on service discovery. The default is multicast DNS, a zeroconf system.
+
+In the event you need a resilient multi-host setup we recommend consul.
 
 ```
 # install consul
