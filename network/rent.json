@@ -15,20 +15,17 @@
               "peer_name": "peer1",
               "port": "8051"
             }
-          ],
-          "anchor_peers": [
-            {
-              "peer_name": "peer0",
-              "port": "7051"
-            }
           ]
         }
       ]
     }
   ],
+  "chaincode_name": "rent",
+  "chaincode_version": "1.0",
   "orderer": {
     "orderer_name": "orderer0",
     "port": "7050"
   },
+  "endorse": "AND ('OrgRentMSP.member')",
   "cli_name": "cli"
 }

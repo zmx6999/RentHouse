@@ -1,0 +1,193 @@
+{
+  "domain": "house.com",
+  "zookeepers": [
+    {
+      "host_name": "zookeeper0",
+      "ports": [
+        "2181",
+        "2888",
+        "3888"
+      ],
+      "zoo_my_id": "1",
+      "zoo_servers": "server.1=zookeeper0:2888:3888 server.2=zookeeper1:2889:3889 server.3=zookeeper2:2890:3890",
+      "data_backup_dir": "/backup/zookeeper0/data",
+      "data_log_backup_dir": "/backup/zookeeper0/datalog"
+    },
+    {
+      "host_name": "zookeeper1",
+      "ports": [
+        "2182",
+        "2889",
+        "3889"
+      ],
+      "zoo_my_id": "2",
+      "zoo_servers": "server.1=zookeeper0:2888:3888 server.2=zookeeper1:2889:3889 server.3=zookeeper2:2890:3890",
+      "data_backup_dir": "/backup/zookeeper1/data",
+      "data_log_backup_dir": "/backup/zookeeper1/datalog"
+    },
+    {
+      "host_name": "zookeeper2",
+      "ports": [
+        "2183",
+        "2890",
+        "3890"
+      ],
+      "zoo_my_id": "3",
+      "zoo_servers": "server.1=zookeeper0:2888:3888 server.2=zookeeper1:2889:3889 server.3=zookeeper2:2890:3890",
+      "data_backup_dir": "/backup/zookeeper2/data",
+      "data_log_backup_dir": "/backup/zookeeper2/datalog"
+    }
+  ],
+  "kafkas": [
+    {
+      "host_name": "kafka0",
+      "broker_id": "0",
+      "zookeepers": [
+        "zookeeper0:2181",
+        "zookeeper1:2182",
+        "zookeeper2:2183"
+      ],
+      "ports": [
+        "9092"
+      ],
+      "backup_dir": "/backup/kafka0/logs"
+    },
+    {
+      "host_name": "kafka1",
+      "broker_id": "1",
+      "zookeepers": [
+        "zookeeper0:2181",
+        "zookeeper1:2182",
+        "zookeeper2:2183"
+      ],
+      "ports": [
+        "9093"
+      ],
+      "backup_dir": "/backup/kafka1/logs"
+    },
+    {
+      "host_name": "kafka2",
+      "broker_id": "2",
+      "zookeepers": [
+        "zookeeper0:2181",
+        "zookeeper1:2182",
+        "zookeeper2:2183"
+      ],
+      "ports": [
+        "9094"
+      ],
+      "backup_dir": "/backup/kafka2/logs"
+    },
+    {
+      "host_name": "kafka3",
+      "broker_id": "3",
+      "zookeepers": [
+        "zookeeper0:2181",
+        "zookeeper1:2182",
+        "zookeeper2:2183"
+      ],
+      "ports": [
+        "9095"
+      ],
+      "backup_dir": "/backup/kafka3/logs"
+    }
+  ],
+  "orderers": [
+    {
+      "orderer_name": "orderer0",
+      "kafka_brokers": [
+        "kafka0:9092",
+        "kafka1:9093",
+        "kafka2:9094",
+        "kafka3:9095"
+      ],
+      "ports": [
+        "7050"
+      ],
+      "backup_dir": "/backup/orderer0/production"
+    },
+    {
+      "orderer_name": "orderer1",
+      "kafka_brokers": [
+        "kafka0:9092",
+        "kafka1:9093",
+        "kafka2:9094",
+        "kafka3:9095"
+      ],
+      "ports": [
+        "8050"
+      ],
+      "backup_dir": "/backup/orderer1/production"
+    }
+  ],
+  "cas": [
+    {
+      "peer_org_name": "OrgRent",
+      "ports": [
+        "7054"
+      ],
+      "admin_name": "admin",
+      "admin_password": "adminpw"
+    }
+  ],
+  "peers": [
+    {
+      "peer_name": "peer0",
+      "org_name": "OrgRent",
+      "ports": [
+        "7051",
+        "7052",
+        "7053"
+      ],
+      "couchdb": {
+        "couchdb_name": "couchdb0",
+        "ports": [
+          "5984"
+        ],
+        "backup_dir": "/backup/OrgRent/couchdb0/data"
+      },
+      "backup_dir": "/backup/OrgRent/peer0/production"
+    },
+    {
+      "peer_name": "peer1",
+      "org_name": "OrgRent",
+      "ports": [
+        "8051",
+        "8052",
+        "8053"
+      ],
+      "couchdb": {
+        "couchdb_name": "couchdb1",
+        "ports": [
+          "6984"
+        ],
+        "backup_dir": "/backup/OrgRent/couchdb1/data"
+      },
+      "backup_dir": "/backup/OrgRent/peer1/production"
+    }
+  ],
+  "clis": [
+    {
+      "cli_name": "cli",
+      "core_peer_name": "peer0",
+      "core_peer_org": "OrgRent",
+      "depends": [
+        "peer0.orgrent.house.com",
+        "peer1.orgrent.house.com"
+      ]
+    }
+  ],
+  "hosts": [
+    "zookeeper0:149.28.210.102",
+    "kafka0:149.28.210.102",
+    "orderer0.house.com:149.28.210.102",
+    "zookeeper1:149.28.210.102",
+    "kafka1:149.28.210.102",
+    "orderer1.house.com:149.28.210.102",
+    "zookeeper2:149.28.210.102",
+    "kafka2:149.28.210.102",
+    "kafka3:149.28.210.102",
+    "peer0.orgrent.house.com:149.28.210.102",
+    "peer1.orgrent.house.com:149.28.210.102"
+  ]
+}

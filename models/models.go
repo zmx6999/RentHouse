@@ -2,9 +2,9 @@ package models
 
 import (
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/channel"
+	"github.com/astaxie/beego"
 	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
 	"github.com/hyperledger/fabric-sdk-go/pkg/core/config"
-	"github.com/astaxie/beego"
 )
 
 var (
@@ -14,6 +14,14 @@ var (
 	ChaincodeId string
 	ConfigFile string
 )
+
+func init()  {
+	ChannelId = beego.AppConfig.String("channel_id")
+	UserName = beego.AppConfig.String("username")
+	OrgName = beego.AppConfig.String("org_name")
+	ChaincodeId = beego.AppConfig.String("chaincode_id")
+	ConfigFile = beego.AppConfig.String("config_file")
+}
 
 type ChaincodeSpec struct {
 	client *channel.Client
@@ -32,25 +40,17 @@ func Initialize(channelId string, userName string, orgName string, chaincodeId s
 		return nil, err
 	}
 
-	return &ChaincodeSpec{client, chaincodeId}, nil
+	return &ChaincodeSpec{client,chaincodeId}, nil
 }
 
-func (this *ChaincodeSpec) ChaincodeQuery(chaincodeId string, function string, args [][]byte) ([]byte, error) {
-	request := channel.Request{ChaincodeID: chaincodeId, Fcn: function, Args: args}
+func (this *ChaincodeSpec) ChaincodeQuery(fcn string, args [][]byte) ([]byte, error) {
+	request := channel.Request{ChaincodeID:this.chaincodeId, Fcn:fcn, Args:args}
 	r, err := this.client.Query(request)
 	return r.Payload, err
 }
 
-func (this *ChaincodeSpec) ChaincodeUpdate(chaincodeId string, function string, args [][]byte) ([]byte, error) {
-	request := channel.Request{ChaincodeID: chaincodeId, Fcn: function, Args: args}
+func (this *ChaincodeSpec) ChaincodeUpdate(fcn string, args [][]byte) ([]byte, error) {
+	request := channel.Request{ChaincodeID:this.chaincodeId, Fcn:fcn, Args:args}
 	r, err := this.client.Execute(request)
 	return []byte(r.TransactionID), err
-}
-
-func init()  {
-	ChannelId = beego.AppConfig.String("channel_id")
-	UserName = beego.AppConfig.String("user_name")
-	OrgName = beego.AppConfig.String("org_name")
-	ChaincodeId = beego.AppConfig.String("chaincode_id")
-	ConfigFile = beego.AppConfig.String("config_file")
 }

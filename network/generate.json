@@ -12,7 +12,7 @@
   ],
   "peer_orgs": [
     {
-      "org_name": "OrgRenting",
+      "org_name": "OrgRent",
       "peer_count": 2,
       "user_count": 1,
       "anchor_peers": [
@@ -23,9 +23,9 @@
   "genesis_profile": "OneOrgOrdererGenesis",
   "channels": [
     {
-      "channel_name": "renting",
+      "channel_name": "rent",
       "orgs": [
-        "OrgRenting"
+        "OrgRent"
       ]
     }
   ]
