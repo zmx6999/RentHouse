@@ -1,8 +1,8 @@
 package controllers
 
 import (
-		"190702m/models"
-				"encoding/json"
+		"190720/models"
+		"encoding/json"
 )
 
 type AreaController struct {
@@ -10,22 +10,22 @@ type AreaController struct {
 }
 
 func (this *AreaController) GetList()  {
-	ccs, err := models.Initialize(models.ChannelId, models.UserName, models.OrgName, models.ChaincodeId,models.ConfigFile)
+	ccs, err := models.Initialize(models.ChannelId, models.UserName, models.OrgName, models.ChaincodeId, models.ConfigFile)
+	if err != nil {
+		this.error(1001, err.Error())
+		return
+	}
+
+	payload, err := ccs.ChaincodeQuery("getAreaList", [][]byte{})
 	if err != nil {
 		this.error(1002, err.Error())
 		return
 	}
 
-	_data, err := ccs.ChaincodeQuery("getAreaList", [][]byte{})
-	if err != nil {
-		this.error(1005, err.Error())
-		return
-	}
-
 	data := []map[string]interface{}{}
-	err = json.Unmarshal(_data, &data)
+	err = json.Unmarshal(payload, &data)
 	if err != nil {
-		this.error(1006, err.Error())
+		this.error(1007, err.Error())
 		return
 	}
 

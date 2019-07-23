@@ -2,8 +2,8 @@ package controllers
 
 import (
 	"github.com/zmx6999/FormValidation/FormValidation"
-	"190702/utils"
-	"190702/models"
+	"190720/models"
+	"190720/utils"
 	"encoding/json"
 )
 
@@ -14,7 +14,7 @@ type HouseController struct {
 func (this *HouseController) Add()  {
 	request, err := this.postParam()
 	if err != nil {
-		this.error(1001, err.Error())
+		this.error(1003, err.Error())
 		return
 	}
 
@@ -28,14 +28,6 @@ func (this *HouseController) Add()  {
 			ValidEmpty:true,
 		},
 		&FormValidation.FieldValidation{
-			FieldName:"address",
-			ValidMethodName:"Require",
-			ValidMethodArgs:[]interface{}{},
-			ErrMsg:"address cannot be empty",
-			Trim:true,
-			ValidEmpty:true,
-		},
-		&FormValidation.FieldValidation{
 			FieldName:"area_id",
 			ValidMethodName:"Require",
 			ValidMethodArgs:[]interface{}{},
@@ -43,41 +35,49 @@ func (this *HouseController) Add()  {
 			Trim:true,
 			ValidEmpty:true,
 		},
+		&FormValidation.FieldValidation{
+			FieldName:"address",
+			ValidMethodName:"Require",
+			ValidMethodArgs:[]interface{}{},
+			ErrMsg:"address cannot be empty",
+			Trim:true,
+			ValidEmpty:true,
+		},
 	}
 
-	gv:=&FormValidation.GroupValidation{
+	gv := &FormValidation.GroupValidation{
 		request,
 		fvs,
 	}
 	_, err = gv.Validate()
 	if err != nil {
-		this.error(1002, err.Error())
-		return
-	}
-
-	userAddr, err := this.validate(request)
-	if err != nil {
 		this.error(1004, err.Error())
 		return
 	}
 
+	userAddr, err := validateUser(request)
+	if err != nil {
+		this.error(1005, err.Error())
+		return
+	}
+
 	title := request["title"].(string)
-	price := utils.GetStringValue(request, "price", "0")
-	address := request["address"].(string)
+	price := utils.StringValue(request, "price", "")
 	areaId := request["area_id"].(string)
-	roomCount := utils.GetStringValue(request, "room_count", "1")
-	acreage := utils.GetStringValue(request, "acreage", "0")
-	unit := utils.GetStringValue(request, "unit", "")
-	capacity := utils.GetStringValue(request, "capacity", "1")
-	beds := utils.GetStringValue(request, "beds", "")
-	deposit := utils.GetStringValue(request, "deposit", "0")
-	minDays := utils.GetStringValue(request, "min_days", "1")
-	maxDays := utils.GetStringValue(request, "max_days", "0")
-	facility := utils.GetStringValue(request, "facilities", "")
+	address := request["address"].(string)
+	roomCount := utils.StringValue(request, "room_count", "")
+	acreage := utils.StringValue(request, "acreage", "")
+	unit := utils.StringValue(request, "unit", "")
+	capacity := utils.StringValue(request, "capacity", "")
+	beds := utils.StringValue(request, "beds", "")
+	deposit := utils.StringValue(request, "deposit", "")
+	minDays := utils.StringValue(request, "min_days", "")
+	maxDays := utils.StringValue(request, "max_days", "")
+	facility := utils.StringValue(request, "facility", "")
 
 	ccs, err := models.Initialize(models.ChannelId, models.UserName, models.OrgName, models.ChaincodeId, models.ConfigFile)
 	if err != nil {
-		this.error(1021, err.Error())
+		this.error(1001, err.Error())
 		return
 	}
 
@@ -98,22 +98,20 @@ func (this *HouseController) Add()  {
 		[]byte(facility),
 	})
 	if err != nil {
-		this.error(1003, err.Error())
+		this.error(1002, err.Error())
 		return
 	}
 
-	data := map[string]interface{}{
+	r := map[string]interface{}{
 		"transaction_id": string(tx),
 	}
-	this.success(data)
+	this.success(r)
 }
 
-func (this *HouseController) UploadImage()  {
-	privateKey := this.Ctx.Request.Form.Get("private_key")
-	houseId := this.Ctx.Request.Form.Get("house_id")
+func (this *HouseController) UpdateImage()  {
 	request := map[string]interface{}{
-		"private_key": privateKey,
-		"house_id": houseId,
+		"private_key": this.Ctx.Request.Form.Get("private_key"),
+		"house_id": this.Ctx.Request.Form.Get("house_id"),
 	}
 
 	fvs:=[]*FormValidation.FieldValidation{
@@ -127,142 +125,95 @@ func (this *HouseController) UploadImage()  {
 		},
 	}
 
-	gv:=&FormValidation.GroupValidation{
+	gv := &FormValidation.GroupValidation{
 		request,
 		fvs,
 	}
 	_, err := gv.Validate()
-	if err != nil {
-		this.error(1002, err.Error())
-		return
-	}
-
-	address, err := this.validate(request)
 	if err != nil {
 		this.error(1004, err.Error())
 		return
 	}
 
-	url, err := this.upload("image", []string{"jpg", "png", "jpeg"}, 1024*1024*2)
+	userAddr, err := validateUser(request)
 	if err != nil {
 		this.error(1005, err.Error())
 		return
 	}
 
+	imageUrl, err := this.upload("image", []string{"jpg", "png", "jpeg"}, 1024*1024*2)
+	if err != nil {
+		this.error(1006, err.Error())
+		return
+	}
+
 	ccs, err := models.Initialize(models.ChannelId, models.UserName, models.OrgName, models.ChaincodeId, models.ConfigFile)
 	if err != nil {
-		this.error(1021, err.Error())
+		this.error(1001, err.Error())
 		return
 	}
 
-	tx, err := ccs.ChaincodeUpdate("updateHouseImage", [][]byte{[]byte(address), []byte(houseId), []byte(url)})
+	houseId := request["house_id"].(string)
+	tx, err := ccs.ChaincodeUpdate("uploadHouseImage", [][]byte{[]byte(userAddr), []byte(houseId), []byte(imageUrl)})
 	if err != nil {
-		this.error(1003, err.Error())
+		this.error(1002, err.Error())
 		return
 	}
 
-	data := map[string]interface{}{
+	r := map[string]interface{}{
 		"transaction_id": string(tx),
 	}
-	this.success(data)
+	this.success(r)
 }
 
 func (this *HouseController) GetList()  {
 	userId := this.GetString("user_id")
-	request := map[string]interface{}{
-		"user_id": userId,
+
+	ccs, err := models.Initialize(models.ChannelId, models.UserName, models.OrgName, models.ChaincodeId, models.ConfigFile)
+	if err != nil {
+		this.error(1001, err.Error())
+		return
 	}
 
-	fvs:=[]*FormValidation.FieldValidation{
-		&FormValidation.FieldValidation{
-			FieldName:"user_id",
-			ValidMethodName:"Require",
-			ValidMethodArgs:[]interface{}{},
-			ErrMsg:"user_id cannot be empty",
-			Trim:true,
-			ValidEmpty:true,
-		},
-	}
-
-	gv:=&FormValidation.GroupValidation{
-		request,
-		fvs,
-	}
-	_, err := gv.Validate()
+	payload, err := ccs.ChaincodeQuery("getHouseList", [][]byte{[]byte(userId)})
 	if err != nil {
 		this.error(1002, err.Error())
 		return
 	}
 
-	ccs, err := models.Initialize(models.ChannelId, models.UserName, models.OrgName, models.ChaincodeId, models.ConfigFile)
-	if err != nil {
-		this.error(1021, err.Error())
-		return
-	}
-
-	data, err := ccs.ChaincodeQuery("getUserHouseList", [][]byte{[]byte(userId)})
-	if err != nil {
-		this.error(1003, err.Error())
-		return
-	}
-
-	r := []map[string]interface{}{}
-	err = json.Unmarshal(data, &r)
+	data := []map[string]interface{}{}
+	err = json.Unmarshal(payload, &data)
 	if err != nil {
 		this.error(1007, err.Error())
 		return
 	}
 
-	this.success(r)
+	this.success(data)
 }
 
-func (this *HouseController) GetDetail()  {
+func (this *HouseController) GetInfo()  {
 	houseId := this.GetString("house_id")
-	request := map[string]interface{}{
-		"house_id": houseId,
+
+	ccs, err := models.Initialize(models.ChannelId, models.UserName, models.OrgName, models.ChaincodeId, models.ConfigFile)
+	if err != nil {
+		this.error(1001, err.Error())
+		return
 	}
 
-	fvs:=[]*FormValidation.FieldValidation{
-		&FormValidation.FieldValidation{
-			FieldName:"house_id",
-			ValidMethodName:"Require",
-			ValidMethodArgs:[]interface{}{},
-			ErrMsg:"house_id cannot be empty",
-			Trim:true,
-			ValidEmpty:true,
-		},
-	}
-
-	gv:=&FormValidation.GroupValidation{
-		request,
-		fvs,
-	}
-	_, err := gv.Validate()
+	payload, err := ccs.ChaincodeQuery("getHouseInfo", [][]byte{[]byte(houseId)})
 	if err != nil {
 		this.error(1002, err.Error())
 		return
 	}
 
-	ccs, err := models.Initialize(models.ChannelId, models.UserName, models.OrgName, models.ChaincodeId, models.ConfigFile)
-	if err != nil {
-		this.error(1021, err.Error())
-		return
-	}
-
-	data, err := ccs.ChaincodeQuery("getHouseDetail", [][]byte{[]byte(houseId)})
-	if err != nil {
-		this.error(1003, err.Error())
-		return
-	}
-
-	r := make(map[string]interface{})
-	err = json.Unmarshal(data, &r)
+	data := make(map[string]interface{})
+	err = json.Unmarshal(payload, &data)
 	if err != nil {
 		this.error(1007, err.Error())
 		return
 	}
 
-	this.success(r)
+	this.success(data)
 }
 
 func (this *HouseController) Search()  {
@@ -274,22 +225,22 @@ func (this *HouseController) Search()  {
 
 	ccs, err := models.Initialize(models.ChannelId, models.UserName, models.OrgName, models.ChaincodeId, models.ConfigFile)
 	if err != nil {
-		this.error(1021, err.Error())
+		this.error(1001, err.Error())
 		return
 	}
 
-	data, err := ccs.ChaincodeQuery("searchHouse", [][]byte{[]byte(areaId), []byte(start), []byte(end), []byte(page), []byte(pageSize)})
+	payload, err := ccs.ChaincodeQuery("searchHouse", [][]byte{[]byte(areaId), []byte(start), []byte(end), []byte(page), []byte(pageSize)})
 	if err != nil {
-		this.error(1003, err.Error())
+		this.error(1002, err.Error())
 		return
 	}
 
-	r := make(map[string]interface{})
-	err = json.Unmarshal(data, &r)
+	data := make(map[string]interface{})
+	err = json.Unmarshal(payload, &data)
 	if err != nil {
 		this.error(1007, err.Error())
 		return
 	}
 
-	this.success(r)
+	this.success(data)
 }

@@ -1,0 +1,1 @@
+{"index":{"fields":["ObjectType","UserId","CreateTime"]},"ddoc":"house_userDoc", "name":"house_user","type":"json"}

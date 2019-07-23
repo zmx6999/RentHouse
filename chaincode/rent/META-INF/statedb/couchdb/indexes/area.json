@@ -1,1 +1,1 @@
-{"index":{"fields":["ObjectType", "AreaId"]},"ddoc":"areaDoc", "name":"area","type":"json"}
+{"index":{"fields":["ObjectType","AreaId"]},"ddoc":"areaDoc", "name":"area","type":"json"}

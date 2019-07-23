@@ -19,7 +19,7 @@
           "anchor_peers": [
             {
               "peer_name": "peer0",
-              "port": "7051"
+              "port": "11051"
             }
           ]
         }

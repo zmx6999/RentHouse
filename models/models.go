@@ -1,8 +1,8 @@
 package models
 
 import (
-	"github.com/hyperledger/fabric-sdk-go/pkg/client/channel"
 	"github.com/astaxie/beego"
+	"github.com/hyperledger/fabric-sdk-go/pkg/client/channel"
 	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
 	"github.com/hyperledger/fabric-sdk-go/pkg/core/config"
 )
@@ -40,7 +40,7 @@ func Initialize(channelId string, userName string, orgName string, chaincodeId s
 		return nil, err
 	}
 
-	return &ChaincodeSpec{client,chaincodeId}, nil
+	return &ChaincodeSpec{client, chaincodeId}, nil
 }
 
 func (this *ChaincodeSpec) ChaincodeQuery(fcn string, args [][]byte) ([]byte, error) {

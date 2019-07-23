@@ -1,68 +1,49 @@
 package controllers
 
+/*
+0x522aca1Cbc2489C9CC87d76bBF30976777859BAC
+0xcb08966f133ab88951d247ebfe24c14ad1968299134d298b55395e30f4d468c2
+4984157656
+0xe6d11A65CcC26702C4786a0Feae374D28dE7DDD4
+0x7e8d5ad666d84175b802f4b6160d8f653aa183c3ee0a78091cfc3e1903155244
+3918506041
+0x182Da35736703daDac8c7F98dEc968CeDF7b4b0a
+0x9d4244ebb366cc93a7d929d743622555fe219f14624b7eb2919274bb0d1e1294
+ */
+
 import (
 	ethereum_crypto "github.com/ethereum/go-ethereum/crypto"
-	"190702/utils"
-		"190702/models"
-	"encoding/json"
+			"190720/utils"
 	"github.com/zmx6999/FormValidation/FormValidation"
+	"190720/models"
+	"encoding/json"
 )
-
-/*
-4095268767
-0xB068a830140F31153f5C6751B72349ca31Ef0A92
-0xa895362f045e7d54c5dadf86d680a8c463e40d120506f5d23fa44e96a30a9406
-3029617152
-0xfF52e5677f38f2e31E3079Ce78e7d46131A261eC
-0x1b0abc01b72131cab3e0c6c6623cb9b116762b7a181879bc24c5d79363b44a73
-0x68fC96D98C79DC00f3498D2cb589a362bBCD046B
-0x035053489f532c57652fd0f009342fa29151d0365ae15a2e395672845f470a39
- */
 
 type UserController struct {
 	BaseController
 }
 
 func (this *UserController) GenerateKey()  {
-	_privateKey, err := ethereum_crypto.GenerateKey()
+	privateKey, err := ethereum_crypto.GenerateKey()
 	if err != nil {
 		this.error(1011, err.Error())
 		return
 	}
 
-	privateKey := utils.EncodePrivateKey(_privateKey)
-	address := utils.AddressFromPrivateKey(_privateKey)
+	privateKeyHex := utils.EncodePrivateKey(privateKey)
+	address := utils.AddressFromPrivateKey(privateKey)
+
 	data := map[string]interface{}{
-		"privateKey": privateKey,
+		"private_key": privateKeyHex,
 		"address": address,
 	}
 	this.success(data)
 }
 
-func (this *UserController) getInfo(address string) (map[string]interface{}, error) {
-	ccs, err := models.Initialize(models.ChannelId, models.UserName, models.OrgName, models.ChaincodeId, models.ConfigFile)
-	if err != nil {
-		return nil, err
-	}
-
-	data, err := ccs.ChaincodeQuery("getUser", [][]byte{[]byte(address)})
-	if err != nil {
-		return nil, err
-	}
-
-	r := make(map[string]interface{})
-	err = json.Unmarshal(data, &r)
-	if err != nil {
-		return nil, err
-	}
-
-	return r, nil
-}
-
 func (this *UserController) Register()  {
 	request, err := this.postParam()
 	if err != nil {
-		this.error(1001, err.Error())
+		this.error(1003, err.Error())
 		return
 	}
 
@@ -75,85 +56,19 @@ func (this *UserController) Register()  {
 			Trim:true,
 			ValidEmpty:true,
 		},
-		&FormValidation.FieldValidation{
-			FieldName:"mobile",
-			ValidMethodName:"ChineseMobile",
-			ValidMethodArgs:[]interface{}{},
-			ErrMsg:"invalid mobile",
-			Trim:true,
-		},
 	}
 
-	gv:=&FormValidation.GroupValidation{
+	gv := &FormValidation.GroupValidation{
 		request,
 		fvs,
 	}
 	_, err = gv.Validate()
 	if err != nil {
-		this.error(1002, err.Error())
-		return
-	}
-
-	address, err := this.validate(request)
-	if err != nil {
 		this.error(1004, err.Error())
 		return
 	}
 
-	ccs, err := models.Initialize(models.ChannelId, models.UserName, models.OrgName, models.ChaincodeId, models.ConfigFile)
-	if err != nil {
-		this.error(1021, err.Error())
-		return
-	}
-
-	mobile := request["mobile"].(string)
-	tx, err := ccs.ChaincodeUpdate("addUser", [][]byte{[]byte(mobile), []byte(address)})
-	if err != nil {
-		this.error(1003, err.Error())
-		return
-	}
-
-	data := map[string]interface{}{
-		"transaction_id": string(tx),
-	}
-	this.success(data)
-}
-
-func (this *UserController) GetInfo()  {
-	request, err := this.postParam()
-	if err != nil {
-		this.error(1001, err.Error())
-		return
-	}
-
-	address, err := this.validate(request)
-	if err != nil {
-		this.error(1004, err.Error())
-		return
-	}
-
-	data, err := this.getInfo(address)
-	if err != nil {
-		this.error(1031, err.Error())
-		return
-	}
-
-	this.success(data)
-}
-
-func (this *UserController) UpdateAvatar()  {
-	privateKey := this.Ctx.Request.Form.Get("private_key")
-	request := map[string]interface{}{
-		"private_key": privateKey,
-	}
-
-	address, err := this.validate(request)
-	if err != nil {
-		this.error(1004, err.Error())
-		return
-	}
-
-	avatarUrl, err := this.upload("avatar", []string{"jpg", "png", "jpeg"}, 1024*1024*2)
+	addr, err := validateUser(request)
 	if err != nil {
 		this.error(1005, err.Error())
 		return
@@ -161,26 +76,62 @@ func (this *UserController) UpdateAvatar()  {
 
 	ccs, err := models.Initialize(models.ChannelId, models.UserName, models.OrgName, models.ChaincodeId, models.ConfigFile)
 	if err != nil {
-		this.error(1021, err.Error())
+		this.error(1001, err.Error())
 		return
 	}
 
-	tx, err := ccs.ChaincodeUpdate("updateUserAvatar", [][]byte{[]byte(address), []byte(avatarUrl)})
+	mobile := request["mobile"].(string)
+	tx, err := ccs.ChaincodeUpdate("addUser", [][]byte{[]byte(mobile), []byte(addr)})
 	if err != nil {
-		this.error(1003, err.Error())
+		this.error(1002, err.Error())
 		return
 	}
 
-	data := map[string]interface{}{
+	r := map[string]interface{}{
 		"transaction_id": string(tx),
 	}
-	this.success(data)
+	this.success(r)
+}
+
+func (this *UserController) UpdateAvatar()  {
+	request := map[string]interface{}{
+		"private_key": this.Ctx.Request.Form.Get("private_key"),
+	}
+
+	addr, err := validateUser(request)
+	if err != nil {
+		this.error(1005, err.Error())
+		return
+	}
+
+	avatarUrl, err := this.upload("avatar", []string{"jpg", "png", "jpeg"}, 1024*1024*2)
+	if err != nil {
+		this.error(1006, err.Error())
+		return
+	}
+
+	ccs, err := models.Initialize(models.ChannelId, models.UserName, models.OrgName, models.ChaincodeId, models.ConfigFile)
+	if err != nil {
+		this.error(1001, err.Error())
+		return
+	}
+
+	tx, err := ccs.ChaincodeUpdate("updateUserAvatar", [][]byte{[]byte(addr), []byte(avatarUrl)})
+	if err != nil {
+		this.error(1002, err.Error())
+		return
+	}
+
+	r := map[string]interface{}{
+		"transaction_id": string(tx),
+	}
+	this.success(r)
 }
 
 func (this *UserController) Rename()  {
 	request, err := this.postParam()
 	if err != nil {
-		this.error(1001, err.Error())
+		this.error(1003, err.Error())
 		return
 	}
 
@@ -195,45 +146,45 @@ func (this *UserController) Rename()  {
 		},
 	}
 
-	gv:=&FormValidation.GroupValidation{
+	gv := &FormValidation.GroupValidation{
 		request,
 		fvs,
 	}
 	_, err = gv.Validate()
 	if err != nil {
-		this.error(1002, err.Error())
+		this.error(1004, err.Error())
 		return
 	}
 
-	address, err := this.validate(request)
+	addr, err := validateUser(request)
 	if err != nil {
-		this.error(1004, err.Error())
+		this.error(1005, err.Error())
 		return
 	}
 
 	ccs, err := models.Initialize(models.ChannelId, models.UserName, models.OrgName, models.ChaincodeId, models.ConfigFile)
 	if err != nil {
-		this.error(1021, err.Error())
+		this.error(1001, err.Error())
 		return
 	}
 
 	newName := request["new_name"].(string)
-	tx, err := ccs.ChaincodeUpdate("rename", [][]byte{[]byte(address), []byte(newName)})
+	tx, err := ccs.ChaincodeUpdate("rename", [][]byte{[]byte(addr), []byte(newName)})
 	if err != nil {
-		this.error(1003, err.Error())
+		this.error(1002, err.Error())
 		return
 	}
 
-	data := map[string]interface{}{
+	r := map[string]interface{}{
 		"transaction_id": string(tx),
 	}
-	this.success(data)
+	this.success(r)
 }
 
-func (this *UserController) Auth()  {
+func (this *UserController) Identify()  {
 	request, err := this.postParam()
 	if err != nil {
-		this.error(1001, err.Error())
+		this.error(1003, err.Error())
 		return
 	}
 
@@ -256,38 +207,73 @@ func (this *UserController) Auth()  {
 		},
 	}
 
-	gv:=&FormValidation.GroupValidation{
+	gv := &FormValidation.GroupValidation{
 		request,
 		fvs,
 	}
 	_, err = gv.Validate()
 	if err != nil {
-		this.error(1002, err.Error())
+		this.error(1004, err.Error())
 		return
 	}
 
-	address, err := this.validate(request)
+	addr, err := validateUser(request)
 	if err != nil {
-		this.error(1004, err.Error())
+		this.error(1005, err.Error())
 		return
 	}
 
 	ccs, err := models.Initialize(models.ChannelId, models.UserName, models.OrgName, models.ChaincodeId, models.ConfigFile)
 	if err != nil {
-		this.error(1021, err.Error())
+		this.error(1001, err.Error())
 		return
 	}
 
 	realName := request["real_name"].(string)
 	idCard := request["id_card"].(string)
-	tx, err := ccs.ChaincodeUpdate("auth", [][]byte{[]byte(address), []byte(realName), []byte(idCard)})
+	tx, err := ccs.ChaincodeUpdate("identify", [][]byte{[]byte(addr), []byte(realName), []byte(idCard)})
+	if err != nil {
+		this.error(1002, err.Error())
+		return
+	}
+
+	r := map[string]interface{}{
+		"transaction_id": string(tx),
+	}
+	this.success(r)
+}
+
+func (this *UserController) GetInfo()  {
+	request, err := this.postParam()
 	if err != nil {
 		this.error(1003, err.Error())
 		return
 	}
 
-	data := map[string]interface{}{
-		"transaction_id": string(tx),
+	addr, err := validateUser(request)
+	if err != nil {
+		this.error(1005, err.Error())
+		return
 	}
+
+	ccs, err := models.Initialize(models.ChannelId, models.UserName, models.OrgName, models.ChaincodeId, models.ConfigFile)
+	if err != nil {
+		this.error(1001, err.Error())
+		return
+	}
+
+	payload, err := ccs.ChaincodeQuery("getUserInfo", [][]byte{[]byte(addr)})
+	if err != nil {
+		this.error(1002, err.Error())
+		return
+	}
+
+	data := make(map[string]interface{})
+	err = json.Unmarshal(payload, &data)
+	if err != nil {
+		this.error(1007, err.Error())
+		return
+	}
+
 	this.success(data)
 }

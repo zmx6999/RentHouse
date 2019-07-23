@@ -3,17 +3,13 @@ package controllers
 import (
 	"github.com/astaxie/beego"
 	"encoding/json"
-		"fmt"
-	"190702/utils"
-	"strings"
-	"path"
-	"github.com/weilaihui/fdfs_client"
 	"github.com/zmx6999/FormValidation/FormValidation"
+	"190720/utils"
+	"path"
+	"strings"
+	"fmt"
+	"github.com/weilaihui/fdfs_client"
 )
-
-type BaseController struct {
-	beego.Controller
-}
 
 type ResponseJSON struct {
 	Code int
@@ -21,13 +17,17 @@ type ResponseJSON struct {
 	Data interface{}
 }
 
+type BaseController struct {
+	beego.Controller
+}
+
 func (this *BaseController) handleResponse(code int, msg string, data interface{})  {
-	this.Data["json"] = &ResponseJSON{Code:code, Msg:msg, Data:data}
+	this.Data["json"] = &ResponseJSON{code, msg, data}
 	this.ServeJSON()
 }
 
 func (this *BaseController) success(data interface{})  {
-	this.handleResponse(200, "OK", data)
+	this.handleResponse(200, "ok", data)
 }
 
 func (this *BaseController) error(code int, msg string)  {
@@ -35,24 +35,57 @@ func (this *BaseController) error(code int, msg string)  {
 }
 
 func (this *BaseController) postParam() (map[string]interface{}, error) {
-	data := make(map[string]interface{})
-	err := json.Unmarshal(this.Ctx.Input.RequestBody, &data)
+	request := make(map[string]interface{})
+	err := json.Unmarshal(this.Ctx.Input.RequestBody, &request)
 	if err != nil {
 		return nil, err
 	}
-	return data, nil
+	return request, nil
 }
 
-func (this *BaseController) upload(key string, allowType []string, allowMaxSize int) (string, error) {
+func validateUser(request map[string]interface{}) (string, error) {
+	fvs:=[]*FormValidation.FieldValidation{
+		&FormValidation.FieldValidation{
+			FieldName:       "private_key",
+			ValidMethodName: "Require",
+			ValidMethodArgs: []interface{}{},
+			ErrMsg:          "private_key cannot be empty",
+			Trim:            true,
+			ValidEmpty:      true,
+		},
+	}
+
+	gv := &FormValidation.GroupValidation{
+		request,
+		fvs,
+	}
+	_, err := gv.Validate()
+	if err != nil {
+		return "", err
+	}
+
+	privateKeyHex := request["private_key"].(string)
+	privateKey, err := utils.DecodePrivateKey(privateKeyHex)
+	if err != nil {
+		return "", err
+	}
+
+	address := utils.AddressFromPrivateKey(privateKey)
+	return address, nil
+}
+
+func (this *BaseController) upload(key string, allowTypeList []string, allowMaxSize int) (string, error) {
 	file, head, err := this.GetFile(key)
 	if err != nil {
 		return "", err
 	}
 	defer file.Close()
 
-	ext := strings.TrimPrefix(path.Ext(head.Filename), ".")
-	if utils.Find(allowType, strings.ToLower(ext)) < 0 {
-		return "", fmt.Errorf("type should be %s", strings.Join(allowType, ","))
+	ext := path.Ext(head.Filename)
+	ext = strings.ToLower(ext)
+	ext = strings.TrimPrefix(ext, ".")
+	if utils.Find(allowTypeList, ext) < 0 {
+		return "", fmt.Errorf("type should be %s", strings.Join(allowTypeList, ","))
 	}
 	if int(head.Size) > allowMaxSize {
 		return "", fmt.Errorf("size exceed")
@@ -64,8 +97,7 @@ func (this *BaseController) upload(key string, allowType []string, allowMaxSize 
 		return "", err
 	}
 
-	configFile := beego.AppConfig.String("fdfs_config_file")
-	client, err := fdfs_client.NewFdfsClient(configFile)
+	client, err := fdfs_client.NewFdfsClient(beego.AppConfig.String("fdfs_client_config"))
 	if err != nil {
 		return "", err
 	}
@@ -76,36 +108,4 @@ func (this *BaseController) upload(key string, allowType []string, allowMaxSize 
 	}
 
 	return r.RemoteFileId, nil
-}
-
-func (this *BaseController) validate(request map[string]interface{}) (string, error) {
-	fvs:=[]*FormValidation.FieldValidation{
-		&FormValidation.FieldValidation{
-			FieldName:"private_key",
-			ValidMethodName:"Require",
-			ValidMethodArgs:[]interface{}{},
-			ErrMsg:"private_key cannot be empty",
-			Trim:true,
-			ValidEmpty:true,
-		},
-	}
-
-	gv:=&FormValidation.GroupValidation{
-		request,
-		fvs,
-	}
-	_, err := gv.Validate()
-	if err != nil {
-		this.error(1002, err.Error())
-		return "", err
-	}
-
-	privateKey, err := utils.DecodePrivateKey(request["private_key"].(string))
-	if err != nil {
-		this.error(1003, err.Error())
-		return "", err
-	}
-
-	address := utils.AddressFromPrivateKey(privateKey)
-	return address, nil
 }

@@ -1,100 +1,40 @@
 package main
 
 import (
-	"time"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
-	"math/rand"
 	"encoding/json"
 	"fmt"
 	"github.com/hyperledger/fabric/protos/peer"
 	"strconv"
+	"math/rand"
+	"time"
 	"strings"
 	"math"
 )
 
-type RentChaincode struct {
-
-}
-
 const (
-	UserPrefix = "User"
-	HousePrefix = "House"
-	AreaPrefix = "Area"
-	FacilityPrefix = "Facility"
-	HouseImagePrefix = "HouseImage"
-	OrderPrefix = "Order"
-
-	OrderWaitAccept= "WAIT_ACCEPT"
-	OrderWaitComment= "WAIT_COMMENT"
-	OrderComplete= "COMPLETE"
-	OrderRejected= "REJECTED"
+	AreaObjectType = "Area"
+	FacilityObjectType = "Facility"
+	UserObjectType = "User"
+	HouseObjectType = "House"
+	HouseImageObjectType = "HouseImage"
+	OrderObjectType = "Order"
 
 	TimeZone = "Asia/Saigon"
 	TimeLayout = "2006-01-02 15:04:05"
 	DateLayout = "2006-01-02"
 
-	FDFSHost = "149.28.210.102"
-	FDFSPort = 8888
+	FastDFSHost = "149.28.210.102"
+	FastDFSPort = 8888
 
-	HouseListPageSize = 10
+	OrderStatusWaitAccept = "WAIT_ACCEPT"
+	OrderStatusWaitComment = "WAIT_COMMENT"
+	OrderStatusComplete = "COMPLETE"
+	OrderStatusRejected = "REJECTED"
 )
 
-func find(stub shim.ChaincodeStubInterface, prefix string, id string) ([]byte, error) {
-	key, err := stub.CreateCompositeKey(prefix, []string{id})
-	if err != nil {
-		return nil, err
-	}
-
-	data, err := stub.GetState(key)
-	if err != nil {
-		return nil, err
-	}
-
-	return data, nil
-}
-
-func getQueryResult(stub shim.ChaincodeStubInterface, query map[string]interface{}) (shim.StateQueryIteratorInterface, error) {
-	queryJson, err := json.Marshal(query)
-	if err != nil {
-		return nil, err
-	}
-
-	iter, err := stub.GetQueryResult(string(queryJson))
-	if err != nil {
-		return nil, err
-	}
-
-	return iter, nil
-}
-
-func generateId(stub shim.ChaincodeStubInterface, prefix string, length int) (string, error) {
-	id := ""
-	a := []string{"1", "2", "3", "4", "5", "6", "7", "8", "9", "0"}
-	n := len(a)
-	for {
-		id = ""
-		for i := 0; i < length; i++ {
-			if i > 0 {
-				id += a[rand.Intn(n)]
-			} else {
-				id += a[rand.Intn(n-1)]
-			}
-		}
-
-		data, err := find(stub, prefix, id)
-		if err != nil {
-			return "", err
-		}
-		if data == nil {
-			break
-		}
-	}
-
-	return id, nil
-}
-
-func put(stub shim.ChaincodeStubInterface, prefix string, id string, obj interface{}) error {
-	key, err := stub.CreateCompositeKey(prefix, []string{id})
+func put(stub shim.ChaincodeStubInterface, objectType string, id string, obj interface{}) error {
+	key, err := stub.CreateCompositeKey(objectType, []string{id})
 	if err != nil {
 		return err
 	}
@@ -112,35 +52,51 @@ func put(stub shim.ChaincodeStubInterface, prefix string, id string, obj interfa
 	return nil
 }
 
-func add(stub shim.ChaincodeStubInterface, prefix string, id string, obj interface{}) error {
-	data, err := find(stub, prefix, id)
+func find(stub shim.ChaincodeStubInterface, objectType string, id string) ([]byte, error) {
+	key, err := stub.CreateCompositeKey(objectType, []string{id})
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := stub.GetState(key)
+	if err != nil {
+		return nil, err
+	}
+
+	return data, nil
+}
+
+func add(stub shim.ChaincodeStubInterface, objectType string, id string, obj interface{}) error {
+	data, err := find(stub, objectType, id)
 	if err != nil {
 		return err
 	}
 	if data != nil {
-		err = fmt.Errorf("key already exists")
-		return err
+		return fmt.Errorf("key exist")
 	}
 
-	err = put(stub, prefix, id, obj)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return put(stub, objectType, id, obj)
 }
 
-func update(stub shim.ChaincodeStubInterface, prefix string, id string, obj interface{}) error {
-	data, err := find(stub, prefix, id)
+func update(stub shim.ChaincodeStubInterface, objectType string, id string, obj interface{}) error {
+	data, err := find(stub, objectType, id)
 	if err != nil {
 		return err
 	}
 	if data == nil {
-		err = fmt.Errorf("key doesn't exist")
+		return fmt.Errorf("key does not exist")
+	}
+
+	return put(stub, objectType, id, obj)
+}
+
+func del(stub shim.ChaincodeStubInterface, objectType string, id string) error {
+	key, err := stub.CreateCompositeKey(objectType, []string{id})
+	if err != nil {
 		return err
 	}
 
-	err = put(stub, prefix, id, obj)
+	err = stub.DelState(key)
 	if err != nil {
 		return err
 	}
@@ -148,24 +104,38 @@ func update(stub shim.ChaincodeStubInterface, prefix string, id string, obj inte
 	return nil
 }
 
-func del(stub shim.ChaincodeStubInterface, prefix string, id string) (err error) {
-	key, err := stub.CreateCompositeKey(prefix, []string{id})
+func getQueryResult(stub shim.ChaincodeStubInterface, query map[string]interface{}) (shim.StateQueryIteratorInterface, error) {
+	queryData, err := json.Marshal(query)
 	if err != nil {
-		return
+		return nil, err
+	}
+	return stub.GetQueryResult(string(queryData))
+}
+
+func generateId(stub shim.ChaincodeStubInterface, objectType string, length int) (string, error) {
+	id := ""
+	for i := 0; i < length; i++ {
+		if i > 0 {
+			id += strconv.Itoa(rand.Intn(10))
+		} else {
+			id += strconv.Itoa(rand.Intn(9)+1)
+		}
 	}
 
-	err = stub.DelState(key)
+	data, err := find(stub, objectType, id)
 	if err != nil {
-		return
+		return "", err
+	}
+	if data != nil {
+		return generateId(stub, objectType, length)
 	}
 
-	return
+	return id, nil
 }
 
 func checkArgs(args []string, n int) error {
 	if len(args) < n {
-		err := fmt.Errorf("%d parameter(s) required", n)
-		return err
+		return fmt.Errorf("%d parameter(s) required", n)
 	}
 
 	return nil
@@ -173,50 +143,49 @@ func checkArgs(args []string, n int) error {
 
 func toTimeZone(t time.Time) time.Time {
 	loc, _ := time.LoadLocation(TimeZone)
-	zt := t.In(loc)
-	return zt
+	return t.In(loc)
 }
 
 func today() time.Time {
 	now := toTimeZone(time.Now()).Format(DateLayout)
 	loc, _ := time.LoadLocation(TimeZone)
-	t, _ := time.ParseInLocation("2006-01-02 15:04:05", now+" 00:00:00", loc)
-	return t
+	r, _ := time.ParseInLocation(TimeLayout, now+" 00:00:00", loc)
+	return r
 }
 
-func toFDFSUrl(url string) string {
+func addDomain(url string) string {
 	if url == "" {
 		return ""
 	}
+	return "http://"+FastDFSHost+":"+strconv.Itoa(FastDFSPort)+"/"+url
+}
 
-	fdfsUrl := "http://"+FDFSHost+":"+strconv.Itoa(FDFSPort)+"/"+url
-	return fdfsUrl
+type RentChaincode struct {
+
 }
 
 type Area struct {
-	AreaId string
 	ObjectType string
+	AreaId string
 	AreaName string
 }
 
-func getAreaName(stub shim.ChaincodeStubInterface, areaId string) (string, error) {
-	data, err := find(stub, AreaPrefix, areaId)
+func findArea(stub shim.ChaincodeStubInterface, id string) (*Area, error) {
+	data, err := find(stub, AreaObjectType, id)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	if data == nil {
-		err = fmt.Errorf("area not found")
-		return "", err
+		return nil, nil
 	}
 
 	var area Area
 	err = json.Unmarshal(data, &area)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	areaName := area.AreaName
-	return areaName, nil
+	return &area, nil
 }
 
 func (this *RentChaincode) addArea(stub shim.ChaincodeStubInterface, args []string) peer.Response {
@@ -225,15 +194,12 @@ func (this *RentChaincode) addArea(stub shim.ChaincodeStubInterface, args []stri
 		return shim.Error(err.Error())
 	}
 
-	areaId := args[0]
-	areaName := args[1]
-
 	var area Area
-	area.AreaId = areaId
-	area.ObjectType = AreaPrefix
-	area.AreaName = areaName
+	area.ObjectType = AreaObjectType
+	area.AreaId = args[0]
+	area.AreaName = args[1]
 
-	err = add(stub, AreaPrefix, areaId, area)
+	err = add(stub, AreaObjectType, area.AreaId, area)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -243,14 +209,13 @@ func (this *RentChaincode) addArea(stub shim.ChaincodeStubInterface, args []stri
 
 func (this *RentChaincode) getAreaList(stub shim.ChaincodeStubInterface) peer.Response {
 	query := map[string]interface{}{
-		"use_index": []string{"_design/areaDoc", "area"},
 		"selector": map[string]interface{}{
-			"ObjectType": AreaPrefix,
+			"ObjectType": AreaObjectType,
 		},
+		"use_index": []string{"_design/areaDoc", "area"},
 		"sort": []map[string]interface{}{
 			map[string]interface{}{"AreaId": "asc"},
 		},
-		"fields": []string{"AreaId", "AreaName"},
 	}
 
 	iter, err := getQueryResult(stub, query)
@@ -259,16 +224,16 @@ func (this *RentChaincode) getAreaList(stub shim.ChaincodeStubInterface) peer.Re
 	}
 	defer iter.Close()
 
-	areaList := []map[string]interface{}{}
+	var areaList []map[string]interface{}
 	for iter.HasNext() {
-		item, _err := iter.Next()
-		if _err != nil {
+		item, err := iter.Next()
+		if err != nil {
 			continue
 		}
 
 		var _area Area
-		_err = json.Unmarshal(item.Value, &_area)
-		if _err != nil {
+		err = json.Unmarshal(item.Value, &_area)
+		if err != nil {
 			continue
 		}
 
@@ -288,9 +253,43 @@ func (this *RentChaincode) getAreaList(stub shim.ChaincodeStubInterface) peer.Re
 }
 
 type Facility struct {
-	FacilityId string
 	ObjectType string
+	FacilityId string
 	FacilityName string
+}
+
+func findFacilityMap(stub shim.ChaincodeStubInterface) (map[string]string, error) {
+	query := map[string]interface{}{
+		"selector": map[string]interface{}{
+			"ObjectType": FacilityObjectType,
+		},
+		"use_index": []string{"_design/facilityDoc", "facility"},
+		"sort": []map[string]interface{}{
+			map[string]interface{}{"FacilityId": "asc"},
+		},
+	}
+
+	iter, err := getQueryResult(stub, query)
+	if err != nil {
+		return nil, err
+	}
+	defer iter.Close()
+
+	facilityMap := make(map[string]string)
+	for iter.HasNext() {
+		item, err := iter.Next()
+		if err != nil {
+			continue
+		}
+
+		var facility Facility
+		err = json.Unmarshal(item.Value, &facility)
+		if err == nil {
+			facilityMap[facility.FacilityId] = facility.FacilityName
+		}
+	}
+
+	return facilityMap, nil
 }
 
 func (this *RentChaincode) addFacility(stub shim.ChaincodeStubInterface, args []string) peer.Response {
@@ -299,15 +298,12 @@ func (this *RentChaincode) addFacility(stub shim.ChaincodeStubInterface, args []
 		return shim.Error(err.Error())
 	}
 
-	facilityId := args[0]
-	facilityName := args[1]
-
 	var facility Facility
-	facility.FacilityId = facilityId
-	facility.ObjectType = FacilityPrefix
-	facility.FacilityName = facilityName
+	facility.ObjectType = FacilityObjectType
+	facility.FacilityId = args[0]
+	facility.FacilityName = args[1]
 
-	err = add(stub, FacilityPrefix, facilityId, facility)
+	err = add(stub, FacilityObjectType, facility.FacilityId, facility)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -317,14 +313,13 @@ func (this *RentChaincode) addFacility(stub shim.ChaincodeStubInterface, args []
 
 func (this *RentChaincode) getFacilityList(stub shim.ChaincodeStubInterface) peer.Response {
 	query := map[string]interface{}{
-		"use_index": []string{"_design/facilityDoc", "facility"},
 		"selector": map[string]interface{}{
-			"ObjectType": FacilityPrefix,
+			"ObjectType": FacilityObjectType,
 		},
+		"use_index": []string{"_design/facilityDoc", "facility"},
 		"sort": []map[string]interface{}{
 			map[string]interface{}{"FacilityId": "asc"},
 		},
-		"fields": []string{"FacilityId", "FacilityName"},
 	}
 
 	iter, err := getQueryResult(stub, query)
@@ -333,16 +328,16 @@ func (this *RentChaincode) getFacilityList(stub shim.ChaincodeStubInterface) pee
 	}
 	defer iter.Close()
 
-	facilityList := []map[string]interface{}{}
+	var facilityList []map[string]interface{}
 	for iter.HasNext() {
-		item, _err := iter.Next()
-		if _err != nil {
+		item, err := iter.Next()
+		if err != nil {
 			continue
 		}
 
 		var _facility Facility
-		_err = json.Unmarshal(item.Value, &_facility)
-		if _err != nil {
+		err = json.Unmarshal(item.Value, &_facility)
+		if err != nil {
 			continue
 		}
 
@@ -361,48 +356,9 @@ func (this *RentChaincode) getFacilityList(stub shim.ChaincodeStubInterface) pee
 	return shim.Success(data)
 }
 
-func getFacilityList(stub shim.ChaincodeStubInterface) (map[string]string, error) {
-	query := map[string]interface{}{
-		"use_index": []string{"_design/facilityDoc", "facility"},
-		"selector": map[string]interface{}{
-			"ObjectType": FacilityPrefix,
-		},
-		"sort": []map[string]interface{}{
-			map[string]interface{}{"FacilityId": "asc"},
-		},
-		"fields": []string{"FacilityId", "FacilityName"},
-	}
-
-	iter, err := getQueryResult(stub, query)
-	if err != nil {
-		return nil, err
-	}
-	defer iter.Close()
-
-	facilityList := make(map[string]string)
-	for iter.HasNext() {
-		item, err := iter.Next()
-		if err != nil {
-			continue
-		}
-
-		var facility Facility
-		err = json.Unmarshal(item.Value, &facility)
-		if err != nil {
-			continue
-		}
-
-		facilityId := facility.FacilityId
-		facilityName := facility.FacilityName
-		facilityList[facilityId] = facilityName
-	}
-
-	return facilityList, nil
-}
-
 type User struct {
-	UserId string
 	ObjectType string
+	UserId string
 	UserName string
 	Address string
 	Mobile string
@@ -412,40 +368,40 @@ type User struct {
 	CreateTime time.Time
 }
 
-func findUserById(stub shim.ChaincodeStubInterface, id string) (User, error) {
-	data, err := find(stub, UserPrefix, id)
+func findUserById(stub shim.ChaincodeStubInterface, id string) (*User, error) {
+	data, err := find(stub, UserObjectType, id)
 	if err != nil {
-		return User{}, err
+		return nil, err
 	}
 	if data == nil {
-		return User{}, nil
+		return nil, nil
 	}
 
-	user := User{}
+	var user User
 	err = json.Unmarshal(data, &user)
 	if err != nil {
-		return User{}, err
+		return nil, err
 	}
 
-	return user, nil
+	return &user, nil
 }
 
-func findUserByMobile(stub shim.ChaincodeStubInterface, mobile string) (User, error) {
+func findUserByMobile(stub shim.ChaincodeStubInterface, mobile string) (*User, error) {
 	query := map[string]interface{}{
-		"use_index": []string{"_design/userDoc", "user"},
+		"use_index": []string{"_design/user_mobileDoc", "user_mobile"},
 		"selector": map[string]interface{}{
-			"ObjectType": UserPrefix,
+			"ObjectType": UserObjectType,
 			"Mobile": mobile,
 		},
 	}
 
 	iter, err := getQueryResult(stub, query)
 	if err != nil {
-		return User{}, err
+		return nil, err
 	}
 	defer iter.Close()
 
-	user := User{}
+	var user User
 	for iter.HasNext() {
 		item, err := iter.Next()
 		if err != nil {
@@ -453,30 +409,30 @@ func findUserByMobile(stub shim.ChaincodeStubInterface, mobile string) (User, er
 		}
 
 		err = json.Unmarshal(item.Value, &user)
-		if err != nil {
-			continue
+		if err == nil {
+			return &user, nil
 		}
 	}
 
-	return user, nil
+	return nil, nil
 }
 
-func findUserByAddress(stub shim.ChaincodeStubInterface, address string) (User, error) {
+func findUserByAddress(stub shim.ChaincodeStubInterface, address string) (*User, error) {
 	query := map[string]interface{}{
-		"use_index": []string{"_design/userAddressDoc", "userAddress"},
+		"use_index": []string{"_design/user_addressDoc", "user_address"},
 		"selector": map[string]interface{}{
-			"ObjectType": UserPrefix,
+			"ObjectType": UserObjectType,
 			"Address": address,
 		},
 	}
 
 	iter, err := getQueryResult(stub, query)
 	if err != nil {
-		return User{}, err
+		return nil, err
 	}
 	defer iter.Close()
 
-	user := User{}
+	var user User
 	for iter.HasNext() {
 		item, err := iter.Next()
 		if err != nil {
@@ -484,31 +440,12 @@ func findUserByAddress(stub shim.ChaincodeStubInterface, address string) (User, 
 		}
 
 		err = json.Unmarshal(item.Value, &user)
-		if err != nil {
-			continue
+		if err == nil {
+			return &user, nil
 		}
 	}
 
-	return user, nil
-}
-
-func updateUser(stub shim.ChaincodeStubInterface, address string, setUser func(*User)) error {
-	user, err := findUserByAddress(stub, address)
-	if err != nil {
-		return err
-	}
-	if user.UserId == "" {
-		err = fmt.Errorf("user does not exist")
-		return err
-	}
-
-	setUser(&user)
-	err = update(stub, UserPrefix, user.UserId, user)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return nil, nil
 }
 
 func (this *RentChaincode) addUser(stub shim.ChaincodeStubInterface, args []string) peer.Response {
@@ -518,43 +455,61 @@ func (this *RentChaincode) addUser(stub shim.ChaincodeStubInterface, args []stri
 	}
 
 	mobile := args[0]
-	address := args[1]
-
 	_user, err := findUserByMobile(stub, mobile)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	if _user.UserId != "" {
-		return shim.Error("mobile already registered")
+	if _user != nil {
+		return shim.Error("mobile exist")
 	}
 
+	address := args[1]
 	_user, err = findUserByAddress(stub, address)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	if _user.UserId != "" {
-		return shim.Error("address already registered")
+	if _user != nil {
+		return shim.Error("address exist")
 	}
 
-	userId, err := generateId(stub, UserPrefix, 10)
+	id, err := generateId(stub, UserObjectType, 10)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
 
 	var user User
-	user.UserId = userId
-	user.ObjectType = UserPrefix
+	user.ObjectType = UserObjectType
+	user.UserId = id
 	user.UserName = mobile
 	user.Address = address
 	user.Mobile = mobile
 	user.CreateTime = toTimeZone(time.Now())
 
-	err = add(stub, UserPrefix, userId, user)
+	err = add(stub, UserObjectType, id, user)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
 
 	return shim.Success(nil)
+}
+
+func updateUser(stub shim.ChaincodeStubInterface, address string, setUser func(user *User)) error {
+	user, err := findUserByAddress(stub, address)
+	if err != nil {
+		return err
+	}
+	if user == nil {
+		return fmt.Errorf("user does not exist")
+	}
+
+	setUser(user)
+
+	err = update(stub, UserObjectType, user.UserId, user)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (this *RentChaincode) updateUserAvatar(stub shim.ChaincodeStubInterface, args []string) peer.Response {
@@ -595,7 +550,7 @@ func (this *RentChaincode) rename(stub shim.ChaincodeStubInterface, args []strin
 	return shim.Success(nil)
 }
 
-func (this *RentChaincode) auth(stub shim.ChaincodeStubInterface, args []string) peer.Response {
+func (this *RentChaincode) identify(stub shim.ChaincodeStubInterface, args []string) peer.Response {
 	err := checkArgs(args, 3)
 	if err != nil {
 		return shim.Error(err.Error())
@@ -616,33 +571,34 @@ func (this *RentChaincode) auth(stub shim.ChaincodeStubInterface, args []string)
 	return shim.Success(nil)
 }
 
-func (this *RentChaincode) getUser(stub shim.ChaincodeStubInterface, args []string) peer.Response {
+func (this *RentChaincode) getUserInfo(stub shim.ChaincodeStubInterface, args []string) peer.Response {
 	err := checkArgs(args, 1)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
 
-	address := args[0]
-	user, err := findUserByAddress(stub, address)
+	addr := args[0]
+
+	user, err := findUserByAddress(stub, addr)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	if user.UserId == "" {
+	if user == nil {
 		return shim.Error("user does not exist")
 	}
 
-	_user := map[string]interface{}{
+	info := map[string]interface{}{
 		"user_id": user.UserId,
 		"username": user.UserName,
 		"address": user.Address,
 		"mobile": user.Mobile,
 		"real_name": user.RealName,
 		"id_card": user.IdCard,
-		"avatar_url": toFDFSUrl(user.AvatarUrl),
+		"avatar_url": addDomain(user.AvatarUrl),
 		"create_time": user.CreateTime.Format(TimeLayout),
 	}
 
-	data, err := json.Marshal(_user)
+	data, err := json.Marshal(info)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -651,8 +607,8 @@ func (this *RentChaincode) getUser(stub shim.ChaincodeStubInterface, args []stri
 }
 
 type House struct {
-	HouseId string
 	ObjectType string
+	HouseId string
 	Title string
 	Price int
 	Address string
@@ -670,124 +626,121 @@ type House struct {
 
 	AreaId string
 	UserId string
-	FacilityId []string
+	FacilityIdList []string
 }
 
-func getHouse(stub shim.ChaincodeStubInterface, houseId string) (House, error) {
-	data, err := find(stub, HousePrefix, houseId)
+func findHouse(stub shim.ChaincodeStubInterface, id string) (*House, error) {
+	data, err := find(stub, HouseObjectType, id)
 	if err != nil {
-		return House{}, err
+		return nil, err
 	}
 	if data == nil {
-		err = fmt.Errorf("house not found")
-		return House{}, err
+		return nil, nil
 	}
 
-	house := House{}
+	var house House
 	err = json.Unmarshal(data, &house)
 	if err != nil {
-		return House{}, err
+		return nil, err
 	}
 
-	if house.HouseId == "" {
-		err = fmt.Errorf("house not found")
-		return House{}, err
-	}
-
-	return house, nil
+	return &house, nil
 }
 
-func getHouseInfo(stub shim.ChaincodeStubInterface, houseId string) (map[string]interface{}, error) {
-	house, err := getHouse(stub, houseId)
+func getHouseInfo(stub shim.ChaincodeStubInterface, id string) (map[string]interface{}, error) {
+	house, err := findHouse(stub, id)
 	if err != nil {
 		return nil, err
 	}
+	if house == nil {
+		return nil, fmt.Errorf("house does not exist")
+	}
 
-	areaName, err := getAreaName(stub, house.AreaId)
-	if err != nil {
-		return nil, err
+	area, err := findArea(stub, house.AreaId)
+	if err != nil || area == nil {
+		area = &Area{}
 	}
 
 	user, err := findUserById(stub, house.UserId)
-	if err != nil {
-		return nil, err
+	if err != nil || user == nil {
+		user = &User{}
 	}
 
-	info := map[string]interface{}{
+	return map[string]interface{}{
 		"house_id": house.HouseId,
 		"title": house.Title,
 		"price": house.Price,
-		"area_name": areaName,
-		"index_image_url": toFDFSUrl(house.IndexImageUrl),
+		"area_name": area.AreaName,
+		"index_image_url": addDomain(house.IndexImageUrl),
 		"room_count": house.RoomCount,
 		"order_count": house.OrderCount,
 		"address": house.Address,
-		"user_avatar": toFDFSUrl(user.AvatarUrl),
+		"user_avatar": addDomain(user.AvatarUrl),
 		"create_time": house.CreateTime.Format(TimeLayout),
-	}
-
-	return info, nil
+	}, nil
 }
 
-func getHouseDesc(stub shim.ChaincodeStubInterface, houseId string) (map[string]interface{}, error) {
-	house, err := getHouse(stub, houseId)
+func getHouseDetail(stub shim.ChaincodeStubInterface, id string) (map[string]interface{}, error) {
+	house, err := findHouse(stub, id)
 	if err != nil {
 		return nil, err
+	}
+	if house == nil {
+		return nil, fmt.Errorf("house does not exist")
 	}
 
 	user, err := findUserById(stub, house.UserId)
-	if err != nil {
-		return nil, err
+	if err != nil || user == nil {
+		user = &User{}
 	}
 
-	imageUrlList, err := getHouseImageUrlList(stub, houseId)
-	if err != nil {
-		return nil, err
-	}
-
-	allFacilityList, err := getFacilityList(stub)
-	if err != nil {
-		return nil, err
-	}
-
-	var facilityList  []string
-	for _, facilityId := range house.FacilityId {
-		facilityList = append(facilityList, allFacilityList[facilityId])
-	}
-
-	orderIdList, err := getHouseOrderIdList(stub, houseId)
-	if err != nil {
-		return nil, err
-	}
-
-	var commentList []map[string]interface{}
-	for _, orderId := range orderIdList{
-		order, err := getOrder(stub, orderId)
-		if err != nil {
-			continue
+	var imageUrlList []string
+	_imageUrlList, err := findHouseImageUrlList(stub, id)
+	if err == nil {
+		for _, imageUrl := range _imageUrlList {
+			imageUrlList = append(imageUrlList, addDomain(imageUrl))
 		}
-		if order.Status != OrderComplete || order.Comment == "" {
-			continue
-		}
-
-		user, err := findUserById(stub, order.UserId)
-		if err != nil {
-			continue
-		}
-
-		comment := map[string]interface{}{
-			"username": user.UserName,
-			"comment": order.Comment,
-			"create_time": order.CreateTime.Format(TimeLayout),
-		}
-		commentList = append(commentList, comment)
 	}
 
-	info := map[string]interface{}{
+	var facilities []string
+	facilityMap, err := findFacilityMap(stub)
+	if err == nil {
+		for _, facilityId := range house.FacilityIdList{
+			facilities = append(facilities, facilityMap[facilityId])
+		}
+	}
+
+	var comments []map[string]interface{}
+	orderIdList, err := findHouseOrderIdList(stub, id)
+	if err == nil {
+		for _, orderId := range orderIdList{
+			order, err := findOrder(stub, orderId)
+			if err != nil || order == nil {
+				continue
+			}
+			if order.Status != OrderStatusComplete || order.Comment == "" {
+				continue
+			}
+
+			user, err := findUserById(stub, order.UserId)
+			if err != nil || user == nil {
+				user = &User{}
+			}
+
+			comment := map[string]interface{}{
+				"username": user.UserName,
+				"comment": order.Comment,
+				"create_time": order.CreateTime.Format(TimeLayout),
+			}
+			comments = append(comments, comment)
+		}
+	}
+
+	return map[string]interface{}{
 		"house_id": house.HouseId,
 		"user_id": house.UserId,
 		"username": user.UserName,
-		"user_avatar": toFDFSUrl(user.AvatarUrl),
+		"user_avatar": addDomain(user.AvatarUrl),
 		"title": house.Title,
 		"price": house.Price,
 		"address": house.Address,
@@ -800,20 +753,26 @@ func getHouseDesc(stub shim.ChaincodeStubInterface, houseId string) (map[string]
 		"min_days": house.MinDays,
 		"max_days": house.MaxDays,
 		"img_urls": imageUrlList,
-		"facilities": facilityList,
-		"comments": commentList,
-	}
-
-	return info, nil
+		"facilities": facilities,
+		"comments": comments,
+	}, nil
 }
 
-func getUserHouseIdList(stub shim.ChaincodeStubInterface, userId string) ([]string, error) {
+func findUserHouseIdList(stub shim.ChaincodeStubInterface, userId string) ([]string, error) {
+	user, err := findUserById(stub, userId)
+	if err != nil {
+		return nil, err
+	}
+	if user == nil {
+		return nil, fmt.Errorf("user does not exist")
+	}
+
 	query := map[string]interface{}{
-		"use_index": []string{"_design/houseUserDoc", "houseUser"},
 		"selector": map[string]interface{}{
-			"ObjectType": HousePrefix,
-			"UserId": userId,
+			"ObjectType": HouseObjectType,
+			"UserId": user.UserId,
 		},
+		"use_index": []string{"_design/house_userDoc", "house_user"},
 		"sort": []map[string]interface{}{
 			map[string]interface{}{"CreateTime": "desc"},
 		},
@@ -825,7 +784,7 @@ func getUserHouseIdList(stub shim.ChaincodeStubInterface, userId string) ([]stri
 	}
 	defer iter.Close()
 
-	idList := []string{}
+	var houseIdList []string
 	for iter.HasNext() {
 		item, err := iter.Next()
 		if err != nil {
@@ -834,14 +793,12 @@ func getUserHouseIdList(stub shim.ChaincodeStubInterface, userId string) ([]stri
 
 		var house House
 		err = json.Unmarshal(item.Value, &house)
-		if err != nil {
-			continue
+		if err == nil {
+			houseIdList = append(houseIdList, house.HouseId)
 		}
-
-		idList = append(idList, house.HouseId)
 	}
 
-	return idList, nil
+	return houseIdList, nil
 }
 
 func (this *RentChaincode) addHouse(stub shim.ChaincodeStubInterface, args []string) peer.Response {
@@ -850,69 +807,69 @@ func (this *RentChaincode) addHouse(stub shim.ChaincodeStubInterface, args []str
 		return shim.Error(err.Error())
 	}
 
-	userAddr := args[0]
-	user, err := findUserByAddress(stub, userAddr)
+	user, err := findUserByAddress(stub, args[0])
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	if user.UserId == "" {
+	if user == nil {
 		return shim.Error("user does not exist")
 	}
 
 	title := args[1]
 
 	price, err := strconv.Atoi(args[2])
-	if err != nil {
-		return shim.Error(err.Error())
+	if err != nil || price < 0 {
+		price = 0
 	}
 
 	areaId := args[3]
 	address := args[4]
 
 	roomCount, err := strconv.Atoi(args[5])
-	if err != nil {
-		return shim.Error(err.Error())
+	if err != nil || roomCount < 1 {
+		roomCount = 1
 	}
 
 	acreage, err := strconv.Atoi(args[6])
-	if err != nil {
-		return shim.Error(err.Error())
+	if err != nil || acreage < 0 {
+		acreage = 0
 	}
 
 	unit := args[7]
 
 	capacity, err := strconv.Atoi(args[8])
-	if err != nil {
-		return shim.Error(err.Error())
+	if err != nil || capacity < 1 {
+		capacity = 1
 	}
 
 	beds := args[9]
 
 	deposit, err := strconv.Atoi(args[10])
-	if err != nil {
-		return shim.Error(err.Error())
+	if err != nil || deposit < 0 {
+		deposit = 0
 	}
 
 	minDays, err := strconv.Atoi(args[11])
-	if err != nil {
-		return shim.Error(err.Error())
+	if err != nil || minDays < 1 {
+		minDays = 1
 	}
 
 	maxDays, err := strconv.Atoi(args[12])
-	if err != nil {
-		return shim.Error(err.Error())
+	if err != nil || maxDays < 0 {
+		maxDays = 0
 	}
 
-	facilityId := strings.Split(args[13], ",")
+	facility := strings.Split(args[13], ",")
 
-	houseId, err := generateId(stub, HousePrefix, 14)
+	id, err := generateId(stub, HouseObjectType, 14)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
 
 	var house House
-	house.ObjectType = HousePrefix
-	house.HouseId = houseId
+	house.ObjectType = HouseObjectType
+	house.HouseId = id
+	house.UserId = user.UserId
 	house.Title = title
 	house.Price = price
 	house.AreaId = areaId
@@ -925,11 +882,10 @@ func (this *RentChaincode) addHouse(stub shim.ChaincodeStubInterface, args []str
 	house.Deposit = deposit
 	house.MinDays = minDays
 	house.MaxDays = maxDays
-	house.UserId = user.UserId
-	house.FacilityId = facilityId
+	house.FacilityIdList = facility
 	house.CreateTime = toTimeZone(time.Now())
 
-	err = add(stub, HousePrefix, houseId, house)
+	err = add(stub, HouseObjectType, id, house)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -937,52 +893,53 @@ func (this *RentChaincode) addHouse(stub shim.ChaincodeStubInterface, args []str
 	return shim.Success(nil)
 }
 
-func (this *RentChaincode) updateHouseImage(stub shim.ChaincodeStubInterface, args []string) peer.Response {
+func (this *RentChaincode) uploadHouseImage(stub shim.ChaincodeStubInterface, args []string) peer.Response {
 	err := checkArgs(args, 3)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
 
-	userAddr := args[0]
-	user, err := findUserByAddress(stub, userAddr)
+	user, err := findUserByAddress(stub, args[0])
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	if user.UserId == "" {
+	if user == nil {
 		return shim.Error("user does not exist")
 	}
 
-	houseId := args[1]
-	imageUrl := args[2]
-
-	house, err := getHouse(stub, houseId)
+	house, err := findHouse(stub, args[1])
 	if err != nil {
 		return shim.Error(err.Error())
 	}
+	if house == nil {
+		return shim.Error("house does not exist")
+	}
 
-	if user.UserId != house.UserId {
+	if house.UserId != user.UserId {
 		return shim.Error("forbidden")
 	}
 
-	houseImageId, err := generateId(stub, HouseImagePrefix, 16)
+	imageUrl := args[2]
+
+	houseImageId, err := generateId(stub, HouseImageObjectType, 16)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
 
 	var houseImage HouseImage
-	houseImage.ObjectType = HouseImagePrefix
+	houseImage.ObjectType = HouseImageObjectType
 	houseImage.HouseImageId = houseImageId
-	houseImage.HouseId = houseId
+	houseImage.HouseId = house.HouseId
 	houseImage.Url = imageUrl
 
-	err = add(stub, HouseImagePrefix, houseImageId, houseImage)
+	err = add(stub, HouseImageObjectType, houseImage.HouseImageId, houseImage)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
 
 	if house.IndexImageUrl == "" {
 		house.IndexImageUrl = imageUrl
-		err = update(stub, HousePrefix, houseId, house)
+		err = update(stub, HouseObjectType, house.HouseId, house)
 		if err != nil {
 			return shim.Error(err.Error())
 		}
@@ -991,14 +948,14 @@ func (this *RentChaincode) updateHouseImage(stub shim.ChaincodeStubInterface, ar
 	return shim.Success(nil)
 }
 
-func (this *RentChaincode) getUserHouseList(stub shim.ChaincodeStubInterface, args []string) peer.Response {
+func (this *RentChaincode) getHouseList(stub shim.ChaincodeStubInterface, args []string) peer.Response {
 	err := checkArgs(args, 1)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
 
 	userId := args[0]
-	houseIdList, err := getUserHouseIdList(stub, userId)
+	houseIdList, err := findUserHouseIdList(stub, userId)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -1006,10 +963,9 @@ func (this *RentChaincode) getUserHouseList(stub shim.ChaincodeStubInterface, ar
 	var houseList []map[string]interface{}
 	for _, houseId := range houseIdList{
 		house, err := getHouseInfo(stub, houseId)
-		if err != nil {
-			continue
+		if err == nil {
+			houseList = append(houseList, house)
 		}
-		houseList = append(houseList, house)
 	}
 
 	data, err := json.Marshal(houseList)
@@ -1020,19 +976,27 @@ func (this *RentChaincode) getUserHouseList(stub shim.ChaincodeStubInterface, ar
 	return shim.Success(data)
 }
 
-func (this *RentChaincode) getHouseDetail(stub shim.ChaincodeStubInterface, args []string) peer.Response {
+func (this *RentChaincode) getHouseInfo(stub shim.ChaincodeStubInterface, args []string) peer.Response {
 	err := checkArgs(args, 1)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
 
 	houseId := args[0]
-	info, err := getHouseDesc(stub, houseId)
+	_house, err := findHouse(stub, houseId)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	if _house == nil {
+		return shim.Error("house does not exist")
+	}
+
+	house, err := getHouseDetail(stub, houseId)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
 
-	data, err := json.Marshal(info)
+	data, err := json.Marshal(house)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -1046,9 +1010,49 @@ func (this *RentChaincode) searchHouse(stub shim.ChaincodeStubInterface, args []
 		return shim.Error(err.Error())
 	}
 
+	query := map[string]interface{}{
+		"selector": map[string]interface{}{
+			"ObjectType": HouseObjectType,
+		},
+		"use_index": []string{"_design/houseDoc", "house"},
+		"sort": []map[string]interface{}{
+			map[string]interface{}{"CreateTime": "desc"},
+		},
+	}
+
+	selector := query["selector"].(map[string]interface{})
+
 	areaId := args[0]
+	if areaId != "" {
+		query["use_index"] = []string{"_design/house_areaDoc", "house_area"}
+		selector["AreaId"] = areaId
+	}
+
 	start := args[1]
 	end := args[2]
+	loc, _ := time.LoadLocation(TimeZone)
+	if start != "" && end != "" {
+		_start, _ := time.ParseInLocation(TimeLayout, start+" 00:00:00", loc)
+		_end, _ := time.ParseInLocation(TimeLayout, end+" 23:59:59", loc)
+		selector["$and"] = []map[string]interface{}{
+			map[string]interface{}{
+				"CreateTime": map[string]interface{}{"$gte": _start},
+			},
+			map[string]interface{}{
+				"CreateTime": map[string]interface{}{"$lte": _end},
+			},
+		}
+	}
+	if start != "" && end == "" {
+		_start, _ := time.ParseInLocation(TimeLayout, start+" 00:00:00", loc)
+		selector["CreateTime"] = map[string]interface{}{"$gte": _start}
+	}
+	if start == "" && end != "" {
+		_end, _ := time.ParseInLocation(TimeLayout, end+" 23:59:59", loc)
+		selector["CreateTime"] = map[string]interface{}{"$lte": _end}
+	}
+
+	query["selector"] = selector
 
 	page, err := strconv.Atoi(args[3])
 	if err != nil || page < 1 {
@@ -1057,118 +1061,50 @@ func (this *RentChaincode) searchHouse(stub shim.ChaincodeStubInterface, args []
 
 	pageSize, err := strconv.Atoi(args[4])
 	if err != nil || pageSize < 1 {
-		pageSize = HouseListPageSize
+		pageSize = 10
 	}
 
-	query := map[string]interface{}{
-		"use_index": []string{"_design/houseDoc", "house"},
-		"selector": map[string]interface{}{
-			"ObjectType": HousePrefix,
-		},
-		"sort": []map[string]interface{}{
-			map[string]interface{}{
-				"CreateTime": "desc",
-			},
-		},
-	}
-
-	selector := query["selector"].(map[string]interface{})
-
-	if areaId != "" {
-		selector["AreaId"] = areaId
-		query["use_index"] = []string{"_design/houseAreaDoc", "houseArea"}
-	}
-
-	if start != "" && end != "" {
-		_start, err := time.Parse(TimeLayout, start+" 00:00:00")
-		if err != nil {
-			return shim.Error(err.Error())
-		}
-
-		_end, err := time.Parse(TimeLayout, end+" 23:59:59")
-		if err != nil {
-			return shim.Error(err.Error())
-		}
-
-		selector["$and"] = []map[string]interface{}{
-			map[string]interface{}{
-				"CreateTime": map[string]interface{}{
-					"$gte": _start,
-				},
-			},
-			map[string]interface{}{
-				"CreateTime": map[string]interface{}{
-					"$lte": _end,
-				},
-			},
-		}
-	}
-
-	if start != "" && end == "" {
-		_start, err := time.Parse(TimeLayout, start+" 00:00:00")
-		if err != nil {
-			return shim.Error(err.Error())
-		}
-
-		selector["CreateTime"] = map[string]interface{}{
-			"$gte": _start,
-		}
-	}
-
-	if start == "" && end != "" {
-		_end, err := time.Parse(TimeLayout, end+" 23:59:59")
-		if err != nil {
-			return shim.Error(err.Error())
-		}
-
-		selector["CreateTime"] = map[string]interface{}{
-			"$lte": _end,
-		}
-	}
-
-	query["selector"] = selector
 	iter, err := getQueryResult(stub, query)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
 	defer iter.Close()
 
-	info := make(map[string]interface{})
-
 	total := 0
+	skip := pageSize*(page-1)
 	var houseList []map[string]interface{}
-	offset := pageSize*(page-1)
 	for iter.HasNext() {
 		item, err := iter.Next()
 		if err != nil {
 			continue
 		}
 
-		total += 1
-		if total <= offset || total > offset+pageSize {
+		total++
+		if total <= skip || total > skip+pageSize {
 			continue
 		}
 
 		var _house House
 		err = json.Unmarshal(item.Value, &_house)
-		if err != nil {
-			continue
+		if err == nil {
+			houseId := _house.HouseId
+			house, err := getHouseInfo(stub, houseId)
+			if err == nil {
+				houseList = append(houseList, house)
+			}
 		}
-
-		house, err := getHouseInfo(stub, _house.HouseId)
-		if err != nil {
-			continue
-		}
-
-		houseList = append(houseList, house)
 	}
 
-	info["houses"] = houseList
-	info["total"] = total
-	info["current_page"] = page
-	info["total_page"] = int(math.Ceil(float64(total)/float64(pageSize)))
+	totalPage := int(math.Ceil(float64(total)/float64(pageSize)))
 
-	data, err := json.Marshal(info)
+	r := map[string]interface{}{
+		"houses": houseList,
+		"total": total,
+		"total_page": totalPage,
+		"current_page": page,
+	}
+
+	data, err := json.Marshal(r)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -1177,17 +1113,17 @@ func (this *RentChaincode) searchHouse(stub shim.ChaincodeStubInterface, args []
 }
 
 type HouseImage struct {
-	HouseImageId string
 	ObjectType string
+	HouseImageId string
 	HouseId string
 	Url string
 }
 
-func getHouseImageUrlList(stub shim.ChaincodeStubInterface, houseId string) ([]string, error) {
+func findHouseImageUrlList(stub shim.ChaincodeStubInterface, houseId string) ([]string, error) {
 	query := map[string]interface{}{
-		"use_index": []string{"_design/houseImageDoc", "houseImage"},
+		"use_index": []string{"_design/user_imageDoc", "user_image"},
 		"selector": map[string]interface{}{
-			"ObjectType": HouseImagePrefix,
+			"ObjectType": HouseImageObjectType,
 			"HouseId": houseId,
 		},
 	}
@@ -1198,7 +1134,7 @@ func getHouseImageUrlList(stub shim.ChaincodeStubInterface, houseId string) ([]s
 	}
 	defer iter.Close()
 
-	urlList := []string{}
+	var urlList []string
 	for iter.HasNext() {
 		item, err := iter.Next()
 		if err != nil {
@@ -1207,19 +1143,17 @@ func getHouseImageUrlList(stub shim.ChaincodeStubInterface, houseId string) ([]s
 
 		var houseImage HouseImage
 		err = json.Unmarshal(item.Value, &houseImage)
-		if err != nil {
-			continue
+		if err == nil {
+			urlList = append(urlList, houseImage.Url)
 		}
-
-		urlList = append(urlList, toFDFSUrl(houseImage.Url))
 	}
 
 	return urlList, nil
 }
 
 type Order struct {
-	OrderId string
 	ObjectType string
+	OrderId string
 	BeginDate time.Time
 	EndDate time.Time
 	Days int
@@ -1233,45 +1167,112 @@ type Order struct {
 	UserId string
 }
 
-func getOrder(stub shim.ChaincodeStubInterface, orderId string) (Order, error) {
-	data, err := find(stub, OrderPrefix, orderId)
+func findOrder(stub shim.ChaincodeStubInterface, id string) (*Order, error) {
+	data, err := find(stub, OrderObjectType, id)
 	if err != nil {
-		return Order{}, err
+		return nil, err
 	}
 	if data == nil {
-		err = fmt.Errorf("order not found")
-		return Order{}, err
+		return nil, nil
 	}
 
-	order := Order{}
+	var order Order
 	err = json.Unmarshal(data, &order)
 	if err != nil {
-		return Order{}, err
+		return nil, err
 	}
 
-	if order.OrderId == "" {
-		err = fmt.Errorf("order not found")
-		return Order{}, err
-	}
-
-	return order, nil
+	return &order, nil
 }
 
-func getOrderInfo(stub shim.ChaincodeStubInterface, orderId string) (map[string]interface{}, error) {
-	order, err := getOrder(stub, orderId)
+func findHouseOrderIdList(stub shim.ChaincodeStubInterface, houseId string) ([]string, error) {
+	query := map[string]interface{}{
+		"selector": map[string]interface{}{
+			"ObjectType": OrderObjectType,
+			"HouseId": houseId,
+		},
+		"use_index": []string{"_design/order_houseDoc", "order_house"},
+		"sort": []map[string]interface{}{
+			map[string]interface{}{"CreateTime": "desc"},
+		},
+	}
+
+	iter, err := getQueryResult(stub, query)
 	if err != nil {
 		return nil, err
 	}
+	defer iter.Close()
 
-	house, err := getHouse(stub, order.HouseId)
+	var orderIdList []string
+	for iter.HasNext() {
+		item, err := iter.Next()
+		if err != nil {
+			continue
+		}
+
+		var order Order
+		err = json.Unmarshal(item.Value, &order)
+		if err == nil {
+			orderIdList = append(orderIdList, order.OrderId)
+		}
+	}
+
+	return orderIdList, nil
+}
+
+func findUserOrderIdList(stub shim.ChaincodeStubInterface, userId string) ([]string, error) {
+	query := map[string]interface{}{
+		"selector": map[string]interface{}{
+			"ObjectType": OrderObjectType,
+			"UserId": userId,
+		},
+		"use_index": []string{"_design/order_userDoc", "order_user"},
+		"sort": []map[string]interface{}{
+			map[string]interface{}{"CreateTime": "desc"},
+		},
+	}
+
+	iter, err := getQueryResult(stub, query)
 	if err != nil {
 		return nil, err
 	}
+	defer iter.Close()
 
-	info := map[string]interface{}{
+	var orderIdList []string
+	for iter.HasNext() {
+		item, err := iter.Next()
+		if err != nil {
+			continue
+		}
+
+		var order Order
+		err = json.Unmarshal(item.Value, &order)
+		if err == nil {
+			orderIdList = append(orderIdList, order.OrderId)
+		}
+	}
+
+	return orderIdList, nil
+}
+
+func getOrderInfo(stub shim.ChaincodeStubInterface, id string) (map[string]interface{}, error) {
+	order, err := findOrder(stub, id)
+	if err != nil {
+		return nil, err
+	}
+	if order == nil {
+		return nil, nil
+	}
+
+	house, err := findHouse(stub, order.HouseId)
+	if err != nil || house == nil {
+		house = &House{}
+	}
+
+	return map[string]interface{}{
 		"order_id": order.OrderId,
 		"title": house.Title,
-		"image_url": toFDFSUrl(house.IndexImageUrl),
+		"image_url": addDomain(house.IndexImageUrl),
 		"begin_date": order.BeginDate.Format(DateLayout),
 		"end_date": order.EndDate.Format(DateLayout),
 		"create_time": order.CreateTime.Format(TimeLayout),
@@ -1279,83 +1280,7 @@ func getOrderInfo(stub shim.ChaincodeStubInterface, orderId string) (map[string]
 		"amount": order.Amount,
 		"status": order.Status,
 		"comment": order.Comment,
-	}
-
-	return info, nil
-}
-
-func getHouseOrderIdList(stub shim.ChaincodeStubInterface, houseId string) ([]string, error) {
-	query := map[string]interface{}{
-		"use_index": []string{"_design/orderHouseDoc", "orderHouse"},
-		"selector": map[string]interface{}{
-			"ObjectType": OrderPrefix,
-			"HouseId": houseId,
-		},
-		"sort": []map[string]interface{}{
-			map[string]interface{}{"CreateTime": "desc"},
-		},
-	}
-
-	iter, err := getQueryResult(stub, query)
-	if err != nil {
-		return nil, err
-	}
-	defer iter.Close()
-
-	idList := []string{}
-	for iter.HasNext() {
-		item, err := iter.Next()
-		if err != nil {
-			continue
-		}
-
-		var order Order
-		err = json.Unmarshal(item.Value, &order)
-		if err != nil {
-			continue
-		}
-
-		idList = append(idList, order.OrderId)
-	}
-
-	return idList, nil
-}
-
-func getUserOrderIdList(stub shim.ChaincodeStubInterface, userId string) ([]string, error) {
-	query := map[string]interface{}{
-		"use_index": []string{"_design/orderUserDoc", "orderUser"},
-		"selector": map[string]interface{}{
-			"ObjectType": OrderPrefix,
-			"UserId": userId,
-		},
-		"sort": []map[string]interface{}{
-			map[string]interface{}{"CreateTime": "desc"},
-		},
-	}
-
-	iter, err := getQueryResult(stub, query)
-	if err != nil {
-		return nil, err
-	}
-	defer iter.Close()
-
-	idList := []string{}
-	for iter.HasNext() {
-		item, err := iter.Next()
-		if err != nil {
-			continue
-		}
-
-		var order Order
-		err = json.Unmarshal(item.Value, &order)
-		if err != nil {
-			continue
-		}
-
-		idList = append(idList, order.OrderId)
-	}
-
-	return idList, nil
+	}, nil
 }
 
 func (this *RentChaincode) addOrder(stub shim.ChaincodeStubInterface, args []string) peer.Response {
@@ -1369,68 +1294,64 @@ func (this *RentChaincode) addOrder(stub shim.ChaincodeStubInterface, args []str
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	if user.UserId == "" {
+	if user == nil {
 		return shim.Error("user does not exist")
 	}
 
 	houseId := args[1]
-	if houseId == "" {
-		return shim.Error("please input house_id")
-	}
-
-	loc, _ := time.LoadLocation(TimeZone)
-	start, _ := time.ParseInLocation(TimeLayout, args[2]+" 00:00:00", loc)
-	end, _ := time.ParseInLocation(TimeLayout, args[3]+" 00:00:00", loc)
-
-	if start.Sub(end) > 0 {
-		return shim.Error("end date no earlier than start date")
-	}
-
-	if today().Sub(start) > 0 {
-		return shim.Error("start date no earlier than today")
-	}
-
-	house, err := getHouse(stub, houseId)
+	house, err := findHouse(stub, houseId)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
+	if house == nil {
+		return shim.Error("house does not exist")
+	}
 
-	if user.UserId == house.UserId {
+	if house.UserId == user.UserId {
 		return shim.Error("forbidden")
 	}
 
-	days := int(end.Sub(start).Seconds()/86400)+1
+	start := args[2]
+	end := args[3]
+
+	loc, _ := time.LoadLocation(TimeZone)
+	_start, _ := time.ParseInLocation(TimeLayout, start+" 00:00:00", loc)
+	_end, _ := time.ParseInLocation(TimeLayout, end+" 00:00:00", loc)
+
+	if _start.Sub(_end).Seconds() > 0 {
+		return shim.Error("start_date should be no later than end_date")
+	}
+	if today().Sub(_start).Seconds() > 0 {
+		return shim.Error("today should be no later than start_date")
+	}
+
+	days := int(math.Round(_end.Sub(_start).Seconds()/86400))+1
 	if days < house.MinDays {
-		return shim.Error("no less than "+strconv.Itoa(house.MinDays)+" days")
+		return shim.Error(fmt.Sprintf("at least %d day(s)", house.MinDays))
 	}
-
 	if house.MaxDays > 0 && days > house.MaxDays {
-		return shim.Error("no more than "+strconv.Itoa(house.MaxDays)+" days")
+		return shim.Error(fmt.Sprintf("at most %d day(s)", house.MaxDays))
 	}
 
-	housePrice := house.Price
-	amount := housePrice*days+house.Deposit
-
-	orderId, err := generateId(stub, OrderPrefix, 16)
+	orderId, err := generateId(stub, OrderObjectType, 16)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
 
 	var order Order
-	order.ObjectType = OrderPrefix
+	order.ObjectType = OrderObjectType
 	order.OrderId = orderId
 	order.UserId = user.UserId
-	order.HouseId = houseId
-	order.CreateTime = toTimeZone(time.Now())
-	order.BeginDate = start
-	order.EndDate = end
-	order.HousePrice = housePrice
+	order.HouseId = house.HouseId
+	order.BeginDate = _start
+	order.EndDate = _end
+	order.HousePrice = house.Price
 	order.Days = days
-	order.Amount = amount
-	order.Comment = ""
-	order.Status = OrderWaitAccept
+	order.Amount = house.Price*days
+	order.Status = OrderStatusWaitAccept
+	order.CreateTime = toTimeZone(time.Now())
 
-	err = add(stub, OrderPrefix, orderId, order)
+	err = add(stub, OrderObjectType, orderId, order)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -1449,47 +1370,37 @@ func (this *RentChaincode) getOrderList(stub shim.ChaincodeStubInterface, args [
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	if user.UserId == "" {
+	if user == nil {
 		return shim.Error("user does not exist")
 	}
 
-	role := args[1]
-
 	var orderList []map[string]interface{}
+
+	role := args[1]
 	if role == "landlord" {
-		houseIdList, err := getUserHouseIdList(stub, user.UserId)
-		if err != nil {
-			return shim.Error(err.Error())
-		}
-
-		for _, houseId := range houseIdList{
-			orderIdList, err := getHouseOrderIdList(stub, houseId)
-			if err != nil {
-				continue
-			}
-
-			for _, orderId := range orderIdList{
-				order, err := getOrderInfo(stub, orderId)
-				if err != nil {
-					continue
+		houseIdList, err := findUserHouseIdList(stub, user.UserId)
+		if err == nil {
+			for _, houseId := range houseIdList{
+				orderIdList, err := findHouseOrderIdList(stub, houseId)
+				if err == nil {
+					for _, orderId := range orderIdList{
+						order, err := getOrderInfo(stub, orderId)
+						if err == nil {
+							orderList = append(orderList, order)
+						}
+					}
 				}
-
-				orderList = append(orderList, order)
 			}
 		}
 	} else {
-		orderIdList, err := getUserOrderIdList(stub, user.UserId)
-		if err != nil {
-			return shim.Error(err.Error())
-		}
-
-		for _, orderId := range orderIdList{
-			order, err := getOrderInfo(stub, orderId)
-			if err != nil {
-				continue
+		orderIdList, err := findUserOrderIdList(stub, user.UserId)
+		if err == nil {
+			for _, orderId := range orderIdList{
+				order, err := getOrderInfo(stub, orderId)
+				if err == nil {
+					orderList = append(orderList, order)
+				}
 			}
-
-			orderList = append(orderList, order)
 		}
 	}
 
@@ -1512,44 +1423,49 @@ func (this *RentChaincode) handleOrder(stub shim.ChaincodeStubInterface, args []
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	if user.UserId == "" {
+	if user == nil {
 		return shim.Error("user does not exist")
 	}
 
 	orderId := args[1]
+	order, err := findOrder(stub, orderId)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	if order == nil {
+		return shim.Error("order does not exist")
+	}
+
+	houseId := order.HouseId
+	house, err := findHouse(stub, houseId)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	if house == nil {
+		return shim.Error("house does not exist")
+	}
+
+	if house.UserId != user.UserId {
+		return shim.Error("forbidden")
+	}
+	if order.Status != OrderStatusWaitAccept {
+		return shim.Error("forbidden")
+	}
+
 	action := args[2]
-
-	order, err := getOrder(stub, orderId)
-	if err != nil {
-		return shim.Error(err.Error())
-	}
-
-	if order.Status != OrderWaitAccept {
-		return shim.Error("forbidden")
-	}
-
-	house, err := getHouse(stub, order.HouseId)
-	if err != nil {
-		return shim.Error(err.Error())
-	}
-
-	if user.UserId != house.UserId {
-		return shim.Error("forbidden")
-	}
-
 	if action == "reject" {
-		order.Status = OrderRejected
+		order.Status = OrderStatusRejected
 	} else {
+		order.Status = OrderStatusWaitComment
+
 		house.OrderCount += 1
-		err = update(stub, HousePrefix, order.HouseId, house)
+		err = update(stub, HouseObjectType, houseId, house)
 		if err != nil {
 			return shim.Error(err.Error())
 		}
-
-		order.Status = OrderWaitComment
 	}
 
-	err = update(stub, OrderPrefix, orderId, order)
+	err = update(stub, OrderObjectType, orderId, order)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -1568,192 +1484,35 @@ func (this *RentChaincode) comment(stub shim.ChaincodeStubInterface, args []stri
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	if user.UserId == "" {
+	if user == nil {
 		return shim.Error("user does not exist")
 	}
 
 	orderId := args[1]
+	order, err := findOrder(stub, orderId)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	if order == nil {
+		return shim.Error("order does not exist")
+	}
+
+	if order.UserId != user.UserId {
+		return shim.Error("forbidden")
+	}
+	if order.Status != OrderStatusWaitComment {
+		return shim.Error("forbidden")
+	}
+
 	comment := args[2]
-
-	order, err := getOrder(stub, orderId)
-	if err != nil {
-		return shim.Error(err.Error())
-	}
-
-	if order.Status != OrderWaitComment {
-		return shim.Error("forbidden")
-	}
-
-	if user.UserId != order.UserId {
-		return shim.Error("forbidden")
-	}
-
+	order.Status = OrderStatusComplete
 	order.Comment = comment
-	order.Status = OrderComplete
-
-	err = update(stub, OrderPrefix, orderId, order)
+	err = update(stub, OrderObjectType, orderId, order)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
 
 	return shim.Success(nil)
-}
-
-func (this *RentChaincode) delArea(stub shim.ChaincodeStubInterface) peer.Response {
-	query := map[string]interface{}{
-		"use_index": []string{"_design/areaDoc", "area"},
-		"selector": map[string]interface{}{
-			"ObjectType": AreaPrefix,
-		},
-		"sort": []map[string]interface{}{
-			map[string]interface{}{"AreaId": "asc"},
-		},
-		"fields": []string{"AreaId"},
-	}
-
-	iter, err := getQueryResult(stub, query)
-	if err != nil {
-		return shim.Error(err.Error())
-	}
-	defer iter.Close()
-
-	for iter.HasNext() {
-		item, err := iter.Next()
-		if err != nil {
-			continue
-		}
-
-		var area Area
-		err = json.Unmarshal(item.Value, &area)
-		if err != nil {
-			continue
-		}
-
-		err = del(stub, AreaPrefix, area.AreaId)
-		if err != nil {
-			return shim.Error(err.Error())
-		}
-	}
-
-	return shim.Success(nil)
-}
-
-func (this *RentChaincode) getUserList(stub shim.ChaincodeStubInterface) peer.Response {
-	query := map[string]interface{}{
-		"selector": map[string]interface{}{
-			"ObjectType": UserPrefix,
-		},
-	}
-
-	iter, err := getQueryResult(stub, query)
-	if err != nil {
-		return shim.Error(err.Error())
-	}
-	defer iter.Close()
-
-	var userList []User
-	for iter.HasNext() {
-		item, err := iter.Next()
-		if err != nil {
-			continue
-		}
-
-		var user User
-		err = json.Unmarshal(item.Value, &user)
-		if err != nil {
-			continue
-		}
-
-		userList = append(userList, user)
-	}
-
-	data, err := json.Marshal(userList)
-	if err != nil {
-		return shim.Error(err.Error())
-	}
-
-	return shim.Success(data)
-}
-
-func (this *RentChaincode) delUser(stub shim.ChaincodeStubInterface) peer.Response {
-	query := map[string]interface{}{
-		"selector": map[string]interface{}{
-			"ObjectType": UserPrefix,
-		},
-	}
-
-	iter, err := getQueryResult(stub, query)
-	if err != nil {
-		return shim.Error(err.Error())
-	}
-	defer iter.Close()
-
-	for iter.HasNext() {
-		item, err := iter.Next()
-		if err != nil {
-			continue
-		}
-
-		var user User
-		err = json.Unmarshal(item.Value, &user)
-		if err != nil {
-			continue
-		}
-
-		err = del(stub, UserPrefix, user.UserId)
-		if err != nil {
-			return shim.Error(err.Error())
-		}
-	}
-
-	return shim.Success(nil)
-}
-
-func (this *RentChaincode) delHouse(stub shim.ChaincodeStubInterface, args []string) peer.Response {
-	houseId := args[0]
-	err := del(stub, HousePrefix, houseId)
-	if err != nil {
-		return shim.Error(err.Error())
-	}
-
-	return shim.Success(nil)
-}
-
-func (this *RentChaincode) getHouseImageList(stub shim.ChaincodeStubInterface) peer.Response {
-	query := map[string]interface{}{
-		"selector": map[string]interface{}{
-			"ObjectType": HouseImagePrefix,
-		},
-	}
-
-	iter, err := getQueryResult(stub, query)
-	if err != nil {
-		return shim.Error(err.Error())
-	}
-	defer iter.Close()
-
-	var houseImageList []HouseImage
-	for iter.HasNext() {
-		item, err := iter.Next()
-		if err != nil {
-			continue
-		}
-
-		var houseImage HouseImage
-		err = json.Unmarshal(item.Value, &houseImage)
-		if err != nil {
-			continue
-		}
-
-		houseImageList = append(houseImageList, houseImage)
-	}
-
-	data, err := json.Marshal(houseImageList)
-	if err != nil {
-		return shim.Error(err.Error())
-	}
-
-	return shim.Success(data)
 }
 
 func (this *RentChaincode) Init(stub shim.ChaincodeStubInterface) peer.Response {
@@ -1777,18 +1536,18 @@ func (this *RentChaincode) Invoke(stub shim.ChaincodeStubInterface) peer.Respons
 		return this.updateUserAvatar(stub, args)
 	case "rename":
 		return this.rename(stub, args)
-	case "auth":
-		return this.auth(stub, args)
-	case "getUser":
-		return this.getUser(stub, args)
+	case "identify":
+		return this.identify(stub, args)
+	case "getUserInfo":
+		return this.getUserInfo(stub, args)
 	case "addHouse":
 		return this.addHouse(stub, args)
-	case "updateHouseImage":
-		return this.updateHouseImage(stub, args)
-	case "getHouseDetail":
-		return this.getHouseDetail(stub, args)
-	case "getUserHouseList":
-		return this.getUserHouseList(stub, args)
+	case "uploadHouseImage":
+		return this.uploadHouseImage(stub, args)
+	case "getHouseList":
+		return this.getHouseList(stub, args)
+	case "getHouseInfo":
+		return this.getHouseInfo(stub, args)
 	case "searchHouse":
 		return this.searchHouse(stub, args)
 	case "addOrder":
@@ -1799,18 +1558,8 @@ func (this *RentChaincode) Invoke(stub shim.ChaincodeStubInterface) peer.Respons
 		return this.handleOrder(stub, args)
 	case "comment":
 		return this.comment(stub, args)
-	case "delArea":
-		return this.delArea(stub)
-	case "getUserList":
-		return this.getUserList(stub)
-	case "delUser":
-		return this.delUser(stub)
-	case "delHouse":
-		return this.delHouse(stub, args)
-	case "getHouseImageList":
-		return this.getHouseImageList(stub)
 	default:
-		return shim.Error("forbidden")
+		return shim.Error("invalid")
 	}
 }
 

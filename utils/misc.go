@@ -1,23 +1,25 @@
 package utils
 
-func StringValueEmpty(data map[string]interface{}, key string) bool {
-	return data[key] == nil || data[key].(string) == ""
-}
-
-func GetStringValue(data map[string]interface{}, key string, defaultValue string) string {
-	if StringValueEmpty(data, key) {
-		return defaultValue
-	} else {
-		return data[key].(string)
-	}
-}
-
-func Find(list []string, str string) int {
-	for i := 0; i < len(list); i++ {
-		if list[i] == str {
+func Find(list []string, needle string) int {
+	l := len(list)
+	for i := 0; i < l; i++ {
+		if list[i] == needle {
 			return i
 		}
 	}
-
 	return -1
+}
+
+func StringValue(data map[string]interface{}, key string, defaultValue string) string {
+	if data[key] == nil {
+		return defaultValue
+	}
+	value, ok := data[key].(string)
+	if !ok {
+		return defaultValue
+	}
+	if value == "" {
+		return defaultValue
+	}
+	return value
 }
